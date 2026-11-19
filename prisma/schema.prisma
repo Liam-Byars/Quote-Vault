@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// A journal of funny things people say.
+model Quote {
+  id        String   @id @default(cuid())
+  text      String
+  // Who said it
+  author    String
+  // When it was said
+  dateSaid  DateTime
+  // Where / the situation (optional context)
+  context   String?
+  // Comma-separated tags (SQLite has no native list type)
+  tags      String   @default("")
+  // Funny meter: 1-5
+  rating    Int      @default(3)
+  favorite  Boolean  @default(false)
+  // Optional group this quote belongs to (null = personal / unfiled)
+  groupId   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group     Group?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([author])
+  @@index([dateSaid])
+  @@index([groupId])
+}
+
+// A group/circle of people sharing quotes (e.g. "Family", "Office").
+// Firestore-ready shape: groups/{groupId}
+model Group {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  // Short invite code so people can join via QR (until Firebase auth is live,
+  // joining locally adds you as a named member).
+  inviteCode  String        @unique @default(cuid())
+  // Display name of the local owner (replaced by Firebase UID once auth is on)
+  ownerName   String        @default("you")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  members     GroupMember[]
+  quotes      Quote[]
+
+  @@index([ownerName])
+}
+
+// A member of a group.
+// Firestore-ready shape: groups/{groupId}/members/{memberId}
+model GroupMember {
+  id       String   @id @default(cuid())
+  groupId  String
+  name     String
+  email    String?
+  // "owner" | "member"
+  role     String   @default("member")
+  joinedAt DateTime @default(now())
+  group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, name])
+  @@index([groupId])
+}

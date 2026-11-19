@@ -1,0 +1,152 @@
+"use client";
+
+import { useState } from "react";
+import { ScrollText, ShieldCheck } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+type Props = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+export function LegalDialog({ open, onOpenChange }: Props) {
+  const [tab, setTab] = useState<"terms" | "privacy">("terms");
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[85vh] max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Terms &amp; Privacy</DialogTitle>
+          <DialogDescription>
+            The short, honest version for Quote Vault.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Tabs value={tab} onValueChange={(v) => setTab(v as "terms" | "privacy")}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="terms" className="gap-1.5">
+              <ScrollText className="h-3.5 w-3.5" />
+              Terms
+            </TabsTrigger>
+            <TabsTrigger value="privacy" className="gap-1.5">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Privacy
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="max-h-[55vh] overflow-y-auto pr-1 scroll-slim">
+            <TabsContent value="terms" className="mt-3 space-y-3 text-sm leading-relaxed text-foreground/90">
+              <Section title="1. What Quote Vault is">
+                Quote Vault is a personal journal app for saving and sharing
+                quotes — the funny, weird, and memorable things people say. You
+                can use it on your own, or in groups with people you invite.
+              </Section>
+              <Section title="2. Your content">
+                You keep ownership of everything you write. Your quotes are
+                either stored only in your own browser (when you&apos;re not
+                signed in) or in your Firebase cloud account (when you are).
+                You can edit or delete your quotes at any time. Don&apos;t put
+                anything in a group you wouldn&apos;t want its members to see.
+              </Section>
+              <Section title="3. Acceptable use">
+                Don&apos;t use Quote Vault to harass anyone, store content
+                that&apos;s illegal, or share quotes meant to hurt or expose
+                someone. Group owners can delete their groups; be kind.
+              </Section>
+              <Section title="4. Accounts">
+                Signing in uses your Google account through Firebase
+                Authentication. You&apos;re responsible for your account
+                activity. You need to meet Google&apos;s minimum age
+                requirement to use Google sign-in.
+              </Section>
+              <Section title="5. The service">
+                Quote Vault is provided &quot;as is&quot; without warranties.
+                It&apos;s a personal project — it may have bugs, and features
+                may change or be discontinued. Don&apos;t rely on it as your
+                only copy of anything important; you can export your quotes as
+                a PDF anytime.
+              </Section>
+              <Section title="6. Changes">
+                If these terms change, the updated version will appear here.
+                Continued use after changes means you accept them.
+              </Section>
+            </TabsContent>
+
+            <TabsContent value="privacy" className="mt-3 space-y-3 text-sm leading-relaxed text-foreground/90">
+              <Section title="What we store">
+                <ul className="mt-1 list-disc space-y-1 pl-4">
+                  <li>
+                    <strong>Not signed in:</strong> your quotes and groups are
+                    saved only in your own browser (IndexedDB). They never
+                    leave your device.
+                  </li>
+                  <li>
+                    <strong>Signed in:</strong> your quotes and groups sync to
+                    your Firebase Firestore cloud so you can access them
+                    across devices and share groups with others.
+                  </li>
+                  <li>
+                    <strong>Account info:</strong> when you sign in with
+                    Google, we see your name, email, and profile picture (via
+                    Firebase Authentication) to label your account.
+                  </li>
+                </ul>
+              </Section>
+              <Section title="What we don't do">
+                <ul className="mt-1 list-disc space-y-1 pl-4">
+                  <li>No ads. No selling data. No data brokers.</li>
+                  <li>No third-party analytics or tracking.</li>
+                  <li>No reading your quotes for any purpose other than
+                    showing them to you and the groups you put them in.</li>
+                </ul>
+              </Section>
+              <Section title="Who can see your quotes">
+                Personal quotes are visible only to you. Quotes you add to a
+                group are visible to that group&apos;s members — that&apos;s
+                the point of groups. Anyone with a group&apos;s invite link or
+                QR code can join that group.
+              </Section>
+              <Section title="Deleting your data">
+                Deleting a quote removes it (from your browser, or from the
+                cloud when signed in). Clearing your browser data removes all
+                local (not-signed-in) quotes. To delete cloud data, delete
+                your quotes/groups in the app, or ask for help.
+              </Section>
+              <Section title="Where data lives">
+                Cloud data is stored in Google Firebase (Firestore), which
+                processes it under Google&apos;s privacy policy. Your
+                not-signed-in data never leaves your device.
+              </Section>
+              <Section title="Contact">
+                Questions about this policy? Reach out through the channel
+                where you got this app.
+              </Section>
+            </TabsContent>
+          </div>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <h3 className="mb-1 text-sm font-semibold">{title}</h3>
+      <div className="text-muted-foreground">{children}</div>
+    </section>
+  );
+}

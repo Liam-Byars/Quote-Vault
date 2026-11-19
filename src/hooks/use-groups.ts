@@ -40,17 +40,18 @@ export function useGroups() {
   const { user } = useAuth();
   const uid = user?.uid ?? null;
   const cloud = useCloudSync();
+  const useLocal = !uid || cloud.error;
 
   const local = useQuery<GroupWithDetails[]>({
     queryKey: [...GROUPS_KEY, "local"],
-    enabled: !uid,
+    enabled: useLocal,
     queryFn: fetchLocalGroups,
   });
 
-  const groups = uid ? cloud.groups : (local.data ?? []);
+  const groups = useLocal ? (local.data ?? []) : cloud.groups;
   return {
     data: { groups },
-    isLoading: uid ? !cloud.ready : local.isLoading,
+    isLoading: useLocal ? local.isLoading : !cloud.ready,
   };
 }
 
@@ -58,14 +59,15 @@ export function useGroup(id: string | null) {
   const { user } = useAuth();
   const uid = user?.uid ?? null;
   const cloud = useCloudSync();
+  const useLocal = !uid || cloud.error;
 
   const local = useQuery<GroupDetail | null>({
     queryKey: [...GROUPS_KEY, "detail", id, "local"],
-    enabled: !uid && !!id,
+    enabled: useLocal && !!id,
     queryFn: () => fetchLocalGroup(id as string),
   });
 
-  if (uid) {
+  if (!useLocal) {
     const group = cloud.groups.find((g) => g.id === id) ?? null;
     const detail: GroupDetail | null = group
       ? { ...group, quotes: cloud.groupQuotes[id as string] ?? [] }
@@ -81,6 +83,7 @@ export function useGroup(id: string | null) {
 
 export function useCreateGroup() {
   const { user } = useAuth();
+  const cloud = useCloudSync();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: GroupInput): Promise<{
@@ -88,7 +91,7 @@ export function useCreateGroup() {
     }> => {
       // Normalize both paths to the same shape the dialogs expect
       // ({ group: { id, name } }) — matches useJoinGroup's return.
-      if (user) {
+      if (user && !cloud.error) {
         const g = await createCloudGroup(user.uid, input);
         return { group: { id: g.id, name: g.name } };
       }
@@ -103,6 +106,7 @@ export function useCreateGroup() {
 
 export function useUpdateGroup() {
   const { user } = useAuth();
+  const cloud = useCloudSync();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -112,7 +116,7 @@ export function useUpdateGroup() {
       id: string;
       input: Partial<GroupInput>;
     }) => {
-      if (user) {
+      if (user && !cloud.error) {
         await updateCloudGroup(id, input);
         return;
       }
@@ -126,10 +130,11 @@ export function useUpdateGroup() {
 
 export function useDeleteGroup() {
   const { user } = useAuth();
+  const cloud = useCloudSync();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      if (user) {
+      if (user && !cloud.error) {
         await deleteCloudGroup(id);
         return;
       }
@@ -144,6 +149,7 @@ export function useDeleteGroup() {
 
 export function useAddMember() {
   const { user } = useAuth();
+  const cloud = useCloudSync();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -153,7 +159,7 @@ export function useAddMember() {
       groupId: string;
       input: MemberInput;
     }) => {
-      if (user) {
+      if (user && !cloud.error) {
         await addCloudNamedMember(groupId, input);
         return;
       }
@@ -167,6 +173,7 @@ export function useAddMember() {
 
 export function useRemoveMember() {
   const { user } = useAuth();
+  const cloud = useCloudSync();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -180,7 +187,7 @@ export function useRemoveMember() {
       // not named = a real joined member (members/{uid} doc)
       named?: boolean;
     }) => {
-      if (user) {
+      if (user && !cloud.error) {
         await removeCloudMember({
           groupId,
           memberId,
@@ -198,6 +205,7 @@ export function useRemoveMember() {
 
 export function useJoinGroup() {
   const { user } = useAuth();
+  const cloud = useCloudSync();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -209,7 +217,7 @@ export function useJoinGroup() {
       name: string;
       email?: string;
     }) => {
-      if (user) {
+      if (user && !cloud.error) {
         return await joinCloudGroupByCode(user.uid, inviteCode, name, email);
       }
       return await joinLocalGroup(inviteCode, name, email);

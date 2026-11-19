@@ -25,6 +25,7 @@ import {
 } from "@/hooks/use-quotes";
 import { useGroups } from "@/hooks/use-groups";
 import { parseTags, type Quote } from "@/lib/quote-types";
+import { APP_VERSION } from "@/lib/version";
 
 type Tab = "vault" | "groups";
 
@@ -260,7 +261,9 @@ export default function Page() {
       <footer className="mt-auto border-t bg-background/85 backdrop-blur-md pb-safe">
         <div className="mx-auto flex w-full max-w-2xl flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-3 text-center">
           <p className="text-[11px] text-muted-foreground">
-            Quote Vault — the things people say, before you forget them.
+            Quote Vault{" "}
+            <span className="tabular-nums opacity-60">v{APP_VERSION}</span>{" "}
+            — the things people say, before you forget them.
           </p>
           <button
             type="button"

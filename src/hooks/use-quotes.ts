@@ -105,29 +105,33 @@ function computeStats(quotes: Quote[]): QuoteStats {
 }
 
 // The user's whole visible collection:
-//   signed in  → personal quotes + every shared group quote (real-time)
-//   signed out → local IndexedDB quotes
+//   signed in + cloud OK  → personal quotes + every shared group quote (real-time)
+//   signed in + cloud FAIL → local IndexedDB quotes (fallback so the app
+//                            still works if Firestore rules aren't set yet)
+//   signed out            → local IndexedDB quotes
 function useAllQuotes() {
   const { user } = useAuth();
   const uid = user?.uid ?? null;
   const cloud = useCloudSync();
+  // Fall back to local when cloud is unreachable (e.g. rules not pasted).
+  const useLocal = !uid || cloud.error;
 
   const local = useQuery<Quote[]>({
     queryKey: [...QUOTES_KEY, "local"],
-    enabled: !uid,
+    enabled: useLocal,
     queryFn: fetchLocalQuotes,
   });
 
-  const quotes = uid
-    ? [
+  const quotes = useLocal
+    ? (local.data ?? [])
+    : [
         ...cloud.personalQuotes,
         ...Object.values(cloud.groupQuotes).flat(),
-      ]
-    : (local.data ?? []);
+      ];
 
   return {
     quotes,
-    isLoading: uid ? !cloud.ready : local.isLoading,
+    isLoading: useLocal ? local.isLoading : !cloud.ready,
   };
 }
 
@@ -149,10 +153,11 @@ export function useQuoteStats() {
 
 export function useCreateQuote() {
   const { user } = useAuth();
+  const cloud = useCloudSync();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: QuoteInput) => {
-      if (user) return createCloudQuote(user.uid, input);
+      if (user && !cloud.error) return createCloudQuote(user.uid, input);
       return createLocalQuote(input);
     },
     onSuccess: () => {
@@ -165,6 +170,7 @@ export function useCreateQuote() {
 
 export function useUpdateQuote() {
   const { user } = useAuth();
+  const cloud = useCloudSync();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -176,7 +182,7 @@ export function useUpdateQuote() {
       input: QuoteInput;
       currentGroupId?: string | null;
     }) => {
-      if (user) {
+      if (user && !cloud.error) {
         return updateCloudQuote({
           id,
           currentGroupId: currentGroupId ?? null,
@@ -195,6 +201,7 @@ export function useUpdateQuote() {
 
 export function useToggleFavorite() {
   const { user } = useAuth();
+  const cloud = useCloudSync();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -206,7 +213,7 @@ export function useToggleFavorite() {
       favorite: boolean;
       groupId?: string | null;
     }) => {
-      if (user) {
+      if (user && !cloud.error) {
         await patchCloudQuote({ id, groupId: groupId ?? null, patch: { favorite } });
         return;
       }
@@ -221,6 +228,7 @@ export function useToggleFavorite() {
 
 export function useDeleteQuote() {
   const { user } = useAuth();
+  const cloud = useCloudSync();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -230,7 +238,7 @@ export function useDeleteQuote() {
       id: string;
       groupId?: string | null;
     }) => {
-      if (user) {
+      if (user && !cloud.error) {
         await deleteCloudQuote({ id, groupId: groupId ?? null });
         return;
       }

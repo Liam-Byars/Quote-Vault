@@ -44,6 +44,10 @@ import type { Group, GroupMember, GroupWithDetails } from "@/lib/group-types";
 type CloudState = {
   /** true once the first snapshot of personal quotes + memberships arrived */
   ready: boolean;
+  /** true when Firestore is unreachable (e.g. rules not set). When this is
+   *  set, `ready` is also set so the UI doesn't hang — hooks fall back to
+   *  local IndexedDB data via `useCloudSync().error`. */
+  error: boolean;
   personalQuotes: Quote[];
   groups: GroupWithDetails[];
   /** groupId -> shared quotes in that group (real-time) */
@@ -52,6 +56,7 @@ type CloudState = {
 
 const EMPTY: CloudState = {
   ready: false,
+  error: false,
   personalQuotes: [],
   groups: [],
   groupQuotes: {},
@@ -71,10 +76,16 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   >({});
   const [groupQuotes, setGroupQuotes] = useState<Record<string, Quote[]>>({});
   const [ready, setReady] = useState(false);
+  const [error, setError] = useState(false);
 
   const erroredRef = useRef(false);
   const reportError = useCallback((err: unknown) => {
     console.error("[cloud-sync]", err);
+    // Mark ready so the UI stops showing a loading spinner and can fall
+    // back to local IndexedDB data. Without this, a permission-denied
+    // error (e.g. Firestore rules not yet pasted) hangs the app forever.
+    setReady(true);
+    setError(true);
     if (!erroredRef.current) {
       erroredRef.current = true;
       toast.error(describeCloudError(err), { duration: 8000 });
@@ -213,8 +224,8 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   }, [groupIds, groupDocs, groupMembers, groupQuotes]);
 
   const value = useMemo<CloudState>(
-    () => ({ ready, personalQuotes, groups, groupQuotes }),
-    [ready, personalQuotes, groups, groupQuotes]
+    () => ({ ready, error, personalQuotes, groups, groupQuotes }),
+    [ready, error, personalQuotes, groups, groupQuotes]
   );
 
   return (

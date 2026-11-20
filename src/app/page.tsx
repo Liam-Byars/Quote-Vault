@@ -17,6 +17,7 @@ import { GroupsView } from "@/components/quote/groups-view";
 import { GroupDetail } from "@/components/quote/group-detail";
 import { JoinGroupDialog } from "@/components/quote/join-group-dialog";
 import { LegalDialog } from "@/components/quote/legal-dialog";
+import { CloudStatus } from "@/components/quote/cloud-status";
 import { exportQuoteBook } from "@/components/quote/export-pdf";
 import {
   useQuotes,
@@ -265,6 +266,7 @@ export default function Page() {
             <span className="tabular-nums opacity-60">v{APP_VERSION}</span>{" "}
             — the things people say, before you forget them.
           </p>
+          <CloudStatus />
           <button
             type="button"
             onClick={() => setLegalOpen(true)}

@@ -40,7 +40,9 @@ export function useGroups() {
   const { user } = useAuth();
   const uid = user?.uid ?? null;
   const cloud = useCloudSync();
-  const useLocal = !uid || cloud.error;
+  const cloudGroups = uid && !cloud.error ? cloud.groups : [];
+  const cloudIsEmpty = uid && !cloud.error && cloud.ready && cloudGroups.length === 0;
+  const useLocal = !uid || cloud.error || cloudIsEmpty;
 
   const local = useQuery<GroupWithDetails[]>({
     queryKey: [...GROUPS_KEY, "local"],
@@ -48,7 +50,7 @@ export function useGroups() {
     queryFn: fetchLocalGroups,
   });
 
-  const groups = useLocal ? (local.data ?? []) : cloud.groups;
+  const groups = useLocal ? (local.data ?? []) : cloudGroups;
   return {
     data: { groups },
     isLoading: useLocal ? local.isLoading : !cloud.ready,
@@ -59,7 +61,9 @@ export function useGroup(id: string | null) {
   const { user } = useAuth();
   const uid = user?.uid ?? null;
   const cloud = useCloudSync();
-  const useLocal = !uid || cloud.error;
+  const cloudGroup = uid && !cloud.error ? (cloud.groups.find((g) => g.id === id) ?? null) : null;
+  const cloudIsEmpty = uid && !cloud.error && cloud.ready && cloud.groups.length === 0;
+  const useLocal = !uid || cloud.error || cloudIsEmpty;
 
   const local = useQuery<GroupDetail | null>({
     queryKey: [...GROUPS_KEY, "detail", id, "local"],
@@ -68,9 +72,8 @@ export function useGroup(id: string | null) {
   });
 
   if (!useLocal) {
-    const group = cloud.groups.find((g) => g.id === id) ?? null;
-    const detail: GroupDetail | null = group
-      ? { ...group, quotes: cloud.groupQuotes[id as string] ?? [] }
+    const detail: GroupDetail | null = cloudGroup
+      ? { ...cloudGroup, quotes: cloud.groupQuotes[id as string] ?? [] }
       : null;
     return { data: detail ? { group: detail } : undefined, isLoading: !cloud.ready };
   }
@@ -92,8 +95,12 @@ export function useCreateGroup() {
       // Normalize both paths to the same shape the dialogs expect
       // ({ group: { id, name } }) — matches useJoinGroup's return.
       if (user && !cloud.error) {
-        const g = await createCloudGroup(user.uid, input);
-        return { group: { id: g.id, name: g.name } };
+        try {
+          const g = await createCloudGroup(user.uid, input);
+          return { group: { id: g.id, name: g.name } };
+        } catch (err) {
+          cloud.reportWriteError(err);
+        }
       }
       const g = await createLocalGroup(input);
       return { group: { id: g.id, name: g.name } };
@@ -117,8 +124,12 @@ export function useUpdateGroup() {
       input: Partial<GroupInput>;
     }) => {
       if (user && !cloud.error) {
-        await updateCloudGroup(id, input);
-        return;
+        try {
+          await updateCloudGroup(id, input);
+          return;
+        } catch (err) {
+          cloud.reportWriteError(err);
+        }
       }
       await updateLocalGroup(id, input);
     },
@@ -135,8 +146,12 @@ export function useDeleteGroup() {
   return useMutation({
     mutationFn: async (id: string) => {
       if (user && !cloud.error) {
-        await deleteCloudGroup(id);
-        return;
+        try {
+          await deleteCloudGroup(id);
+          return;
+        } catch (err) {
+          cloud.reportWriteError(err);
+        }
       }
       await deleteLocalGroup(id);
     },
@@ -160,8 +175,12 @@ export function useAddMember() {
       input: MemberInput;
     }) => {
       if (user && !cloud.error) {
-        await addCloudNamedMember(groupId, input);
-        return;
+        try {
+          await addCloudNamedMember(groupId, input);
+          return;
+        } catch (err) {
+          cloud.reportWriteError(err);
+        }
       }
       await addLocalMember(groupId, input);
     },
@@ -188,12 +207,16 @@ export function useRemoveMember() {
       named?: boolean;
     }) => {
       if (user && !cloud.error) {
-        await removeCloudMember({
-          groupId,
-          memberId,
-          named: Boolean(named),
-        });
-        return;
+        try {
+          await removeCloudMember({
+            groupId,
+            memberId,
+            named: Boolean(named),
+          });
+          return;
+        } catch (err) {
+          cloud.reportWriteError(err);
+        }
       }
       await removeLocalMember(groupId, memberId);
     },
@@ -218,7 +241,11 @@ export function useJoinGroup() {
       email?: string;
     }) => {
       if (user && !cloud.error) {
-        return await joinCloudGroupByCode(user.uid, inviteCode, name, email);
+        try {
+          return await joinCloudGroupByCode(user.uid, inviteCode, name, email);
+        } catch (err) {
+          cloud.reportWriteError(err);
+        }
       }
       return await joinLocalGroup(inviteCode, name, email);
     },

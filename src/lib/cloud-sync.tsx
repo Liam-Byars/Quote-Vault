@@ -52,6 +52,10 @@ type CloudState = {
   groups: GroupWithDetails[];
   /** groupId -> shared quotes in that group (real-time) */
   groupQuotes: Record<string, Quote[]>;
+  /** Called by mutation hooks when a cloud WRITE fails. Sets `error` so the
+   *  app falls back to local IndexedDB for everything (reads + writes)
+   *  until the page is refreshed. */
+  reportWriteError: (err: unknown) => void;
 };
 
 const EMPTY: CloudState = {
@@ -60,6 +64,7 @@ const EMPTY: CloudState = {
   personalQuotes: [],
   groups: [],
   groupQuotes: {},
+  reportWriteError: () => {},
 };
 
 const CloudSyncContext = createContext<CloudState>(EMPTY);
@@ -89,6 +94,20 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
     if (!erroredRef.current) {
       erroredRef.current = true;
       toast.error(describeCloudError(err), { duration: 8000 });
+    }
+  }, []);
+
+  // Called by mutation hooks when a cloud WRITE fails (but reads may still
+  // succeed — e.g. rules allow reads but block creates). Sets `error` so the
+  // app immediately falls back to local IndexedDB for everything.
+  const reportWriteError = useCallback((err: unknown) => {
+    console.error("[cloud-sync] write error:", err);
+    setError(true);
+    if (!erroredRef.current) {
+      erroredRef.current = true;
+      toast.error(describeCloudError(err) + " — saving locally instead.", {
+        duration: 8000,
+      });
     }
   }, []);
 
@@ -224,8 +243,8 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
   }, [groupIds, groupDocs, groupMembers, groupQuotes]);
 
   const value = useMemo<CloudState>(
-    () => ({ ready, error, personalQuotes, groups, groupQuotes }),
-    [ready, error, personalQuotes, groups, groupQuotes]
+    () => ({ ready, error, personalQuotes, groups, groupQuotes, reportWriteError }),
+    [ready, error, personalQuotes, groups, groupQuotes, reportWriteError]
   );
 
   return (

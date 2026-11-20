@@ -113,8 +113,20 @@ function useAllQuotes() {
   const { user } = useAuth();
   const uid = user?.uid ?? null;
   const cloud = useCloudSync();
-  // Fall back to local when cloud is unreachable (e.g. rules not pasted).
-  const useLocal = !uid || cloud.error;
+
+  const cloudQuotes =
+    uid && !cloud.error
+      ? [
+          ...cloud.personalQuotes,
+          ...Object.values(cloud.groupQuotes).flat(),
+        ]
+      : [];
+  // Fall back to local when: not signed in, cloud is erroring, OR cloud is
+  // ready but empty (so quotes saved locally during a previous cloud failure
+  // still show instead of vanishing behind an empty cloud state).
+  const cloudIsEmpty =
+    uid && !cloud.error && cloud.ready && cloudQuotes.length === 0;
+  const useLocal = !uid || cloud.error || cloudIsEmpty;
 
   const local = useQuery<Quote[]>({
     queryKey: [...QUOTES_KEY, "local"],
@@ -122,12 +134,7 @@ function useAllQuotes() {
     queryFn: fetchLocalQuotes,
   });
 
-  const quotes = useLocal
-    ? (local.data ?? [])
-    : [
-        ...cloud.personalQuotes,
-        ...Object.values(cloud.groupQuotes).flat(),
-      ];
+  const quotes = useLocal ? local.data ?? [] : cloudQuotes;
 
   return {
     quotes,
@@ -157,7 +164,17 @@ export function useCreateQuote() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: QuoteInput) => {
-      if (user && !cloud.error) return createCloudQuote(user.uid, input);
+      if (user && !cloud.error) {
+        try {
+          return await createCloudQuote(user.uid, input);
+        } catch (err) {
+          // Cloud write failed (e.g. rules block creates). Don't lose the
+          // quote — save locally and flag cloud as erroring so everything
+          // switches to local mode.
+          cloud.reportWriteError(err);
+          return createLocalQuote(input);
+        }
+      }
       return createLocalQuote(input);
     },
     onSuccess: () => {
@@ -183,12 +200,17 @@ export function useUpdateQuote() {
       currentGroupId?: string | null;
     }) => {
       if (user && !cloud.error) {
-        return updateCloudQuote({
-          id,
-          currentGroupId: currentGroupId ?? null,
-          uid: user.uid,
-          input,
-        });
+        try {
+          return await updateCloudQuote({
+            id,
+            currentGroupId: currentGroupId ?? null,
+            uid: user.uid,
+            input,
+          });
+        } catch (err) {
+          cloud.reportWriteError(err);
+          return updateLocalQuote(id, input);
+        }
       }
       return updateLocalQuote(id, input);
     },
@@ -214,8 +236,12 @@ export function useToggleFavorite() {
       groupId?: string | null;
     }) => {
       if (user && !cloud.error) {
-        await patchCloudQuote({ id, groupId: groupId ?? null, patch: { favorite } });
-        return;
+        try {
+          await patchCloudQuote({ id, groupId: groupId ?? null, patch: { favorite } });
+          return;
+        } catch (err) {
+          cloud.reportWriteError(err);
+        }
       }
       await patchLocalQuote(id, { favorite });
     },
@@ -239,8 +265,12 @@ export function useDeleteQuote() {
       groupId?: string | null;
     }) => {
       if (user && !cloud.error) {
-        await deleteCloudQuote({ id, groupId: groupId ?? null });
-        return;
+        try {
+          await deleteCloudQuote({ id, groupId: groupId ?? null });
+          return;
+        } catch (err) {
+          cloud.reportWriteError(err);
+        }
       }
       await deleteLocalQuote(id);
     },

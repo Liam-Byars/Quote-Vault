@@ -105,8 +105,10 @@ export function CloudSyncProvider({ children }: { children: ReactNode }) {
     setError(true);
     if (!erroredRef.current) {
       erroredRef.current = true;
-      toast.error(describeCloudError(err) + " — saving locally instead.", {
-        duration: 8000,
+      // Reassuring, not alarming — the data IS saved (locally). The cloud
+      // will sync when it's available again.
+      toast("Saved locally — cloud sync paused. Your data is safe.", {
+        duration: 5000,
       });
     }
   }, []);

@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import type { Quote, QuoteInput, QuoteStats } from "@/lib/quote-types";
+import { withTimeout } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useCloudSync } from "@/lib/cloud-sync";
 import {
@@ -166,7 +167,7 @@ export function useCreateQuote() {
     mutationFn: async (input: QuoteInput) => {
       if (user && !cloud.error) {
         try {
-          return await createCloudQuote(user.uid, input);
+          return await withTimeout(createCloudQuote(user.uid, input));
         } catch (err) {
           // Cloud write failed (e.g. rules block creates). Don't lose the
           // quote — save locally and flag cloud as erroring so everything
@@ -201,12 +202,12 @@ export function useUpdateQuote() {
     }) => {
       if (user && !cloud.error) {
         try {
-          return await updateCloudQuote({
+          return await withTimeout(updateCloudQuote({
             id,
             currentGroupId: currentGroupId ?? null,
             uid: user.uid,
             input,
-          });
+          }));
         } catch (err) {
           cloud.reportWriteError(err);
           return updateLocalQuote(id, input);
@@ -237,7 +238,7 @@ export function useToggleFavorite() {
     }) => {
       if (user && !cloud.error) {
         try {
-          await patchCloudQuote({ id, groupId: groupId ?? null, patch: { favorite } });
+          await withTimeout(patchCloudQuote({ id, groupId: groupId ?? null, patch: { favorite } }));
           return;
         } catch (err) {
           cloud.reportWriteError(err);
@@ -266,7 +267,7 @@ export function useDeleteQuote() {
     }) => {
       if (user && !cloud.error) {
         try {
-          await deleteCloudQuote({ id, groupId: groupId ?? null });
+          await withTimeout(deleteCloudQuote({ id, groupId: groupId ?? null }));
           return;
         } catch (err) {
           cloud.reportWriteError(err);

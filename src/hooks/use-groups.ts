@@ -11,6 +11,7 @@ import type {
   MemberInput,
 } from "@/lib/group-types";
 import type { Quote } from "@/lib/quote-types";
+import { withTimeout } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useCloudSync } from "@/lib/cloud-sync";
 import {
@@ -96,7 +97,7 @@ export function useCreateGroup() {
       // ({ group: { id, name } }) — matches useJoinGroup's return.
       if (user && !cloud.error) {
         try {
-          const g = await createCloudGroup(user.uid, input);
+          const g = await withTimeout(createCloudGroup(user.uid, input));
           return { group: { id: g.id, name: g.name } };
         } catch (err) {
           cloud.reportWriteError(err);
@@ -125,7 +126,7 @@ export function useUpdateGroup() {
     }) => {
       if (user && !cloud.error) {
         try {
-          await updateCloudGroup(id, input);
+          await withTimeout(updateCloudGroup(id, input));
           return;
         } catch (err) {
           cloud.reportWriteError(err);
@@ -147,7 +148,7 @@ export function useDeleteGroup() {
     mutationFn: async (id: string) => {
       if (user && !cloud.error) {
         try {
-          await deleteCloudGroup(id);
+          await withTimeout(deleteCloudGroup(id));
           return;
         } catch (err) {
           cloud.reportWriteError(err);
@@ -176,7 +177,7 @@ export function useAddMember() {
     }) => {
       if (user && !cloud.error) {
         try {
-          await addCloudNamedMember(groupId, input);
+          await withTimeout(addCloudNamedMember(groupId, input));
           return;
         } catch (err) {
           cloud.reportWriteError(err);
@@ -208,11 +209,11 @@ export function useRemoveMember() {
     }) => {
       if (user && !cloud.error) {
         try {
-          await removeCloudMember({
+          await withTimeout(removeCloudMember({
             groupId,
             memberId,
             named: Boolean(named),
-          });
+          }));
           return;
         } catch (err) {
           cloud.reportWriteError(err);
@@ -242,7 +243,7 @@ export function useJoinGroup() {
     }) => {
       if (user && !cloud.error) {
         try {
-          return await joinCloudGroupByCode(user.uid, inviteCode, name, email);
+          return await withTimeout(joinCloudGroupByCode(user.uid, inviteCode, name, email));
         } catch (err) {
           cloud.reportWriteError(err);
         }

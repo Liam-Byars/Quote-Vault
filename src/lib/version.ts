@@ -9,4 +9,4 @@
 //
 // When patch or minor bumps, the numbers to the right reset to 01.
 // When major bumps (only on your word), everything resets: 2.00.01.
-export const APP_VERSION = "1.00.03";
+export const APP_VERSION = "1.00.04";

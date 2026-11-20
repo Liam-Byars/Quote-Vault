@@ -45,7 +45,10 @@ let db: Firestore | null = null;
 if (isFirebaseConfigured) {
   app = getApps().length ? getApp() : initializeApp(firebaseConfig);
   auth = getAuth(app);
-  db = getFirestore(app);
+  // The Firestore database in this project is named "quotevault" (not the
+  // standard "(default)"). If the databaseId isn't specified, the SDK looks
+  // for "(default)" and throws "Database '(default)' not found".
+  db = getFirestore(app, "quotevault");
 }
 
 export { app, auth, db };

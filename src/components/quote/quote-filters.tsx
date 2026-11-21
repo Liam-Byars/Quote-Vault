@@ -29,7 +29,7 @@ export function QuoteFiltersBar({
   resultCount,
 }: Props) {
   const hasFilters =
-    !!filters.q || !!filters.author || !!filters.tag || !!filters.favorite;
+    !!filters.q || !!filters.author || !!filters.tag || !!filters.favorite || !!filters.dateFrom || !!filters.dateTo;
 
   const clearAll = () =>
     onChange({ sort: filters.sort ?? "newest" });
@@ -154,6 +154,24 @@ export function QuoteFiltersBar({
             Clear
           </Button>
         )}
+      </div>
+
+      {/* Date range row */}
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs text-muted-foreground shrink-0">From</span>
+        <Input
+          type="date"
+          value={filters.dateFrom ?? ""}
+          onChange={(e) => onChange({ ...filters, dateFrom: e.target.value || undefined })}
+          className="h-8 w-auto text-xs"
+        />
+        <span className="text-xs text-muted-foreground shrink-0">to</span>
+        <Input
+          type="date"
+          value={filters.dateTo ?? ""}
+          onChange={(e) => onChange({ ...filters, dateTo: e.target.value || undefined })}
+          className="h-8 w-auto text-xs"
+        />
       </div>
     </div>
   );

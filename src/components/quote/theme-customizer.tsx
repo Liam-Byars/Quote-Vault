@@ -34,18 +34,19 @@ function applyTheme(idx: number) {
 }
 
 export function ThemeCustomizer() {
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
+  const [current, setCurrent] = useState(() => {
+    if (typeof window === "undefined") return 0;
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const idx = THEMES.findIndex((t) => t.name === saved);
-      if (idx >= 0) {
-        setCurrent(idx);
-        applyTheme(idx);
-      }
+      if (idx >= 0) return idx;
     }
-  }, []);
+    return 0;
+  });
+
+  useEffect(() => {
+    applyTheme(current);
+  }, [current]);
 
   const select = useCallback((idx: number) => {
     setCurrent(idx);

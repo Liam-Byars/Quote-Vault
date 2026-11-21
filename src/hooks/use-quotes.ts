@@ -34,6 +34,8 @@ export type QuoteFilters = {
   sort?: "newest" | "oldest" | "rating" | "favorite";
   groupId?: string;
   ungrouped?: boolean;
+  dateFrom?: string;
+  dateTo?: string;
 };
 
 // Apply filters to an in-memory list (used by both the cloud and local paths,
@@ -66,6 +68,14 @@ function applyFilters(quotes: Quote[], filters: QuoteFilters): Quote[] {
   if (filters.favorite) out = out.filter((x) => x.favorite);
   if (filters.groupId) out = out.filter((x) => x.groupId === filters.groupId);
   if (filters.ungrouped) out = out.filter((x) => !x.groupId);
+  if (filters.dateFrom) {
+    const from = new Date(filters.dateFrom).toISOString();
+    out = out.filter((x) => (x.dateSaid ?? x.createdAt) >= from);
+  }
+  if (filters.dateTo) {
+    const to = new Date(filters.dateTo + "T23:59:59").toISOString();
+    out = out.filter((x) => (x.dateSaid ?? x.createdAt) <= to);
+  }
 
   const sort = filters.sort ?? "newest";
   out = [...out].sort((a, b) => {

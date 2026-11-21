@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import {
   Heart,
@@ -66,7 +66,18 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
   const deleteQuote = useDeleteQuote();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
+  const [laughs, setLaughs] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    const stored = localStorage.getItem(`laugh-${quote.id}`);
+    return stored ? parseInt(stored, 10) || 0 : 0;
+  });
   const tags = parseTags(quote.tags);
+
+  const onLaugh = () => {
+    const next = laughs + 1;
+    setLaughs(next);
+    localStorage.setItem(`laugh-${quote.id}`, String(next));
+  };
 
   const onFav = () => {
     toggleFav.mutate({
@@ -135,6 +146,14 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
               </div>
 
               <div className="flex items-center gap-0.5">
+                <button
+                  type="button"
+                  onClick={onLaugh}
+                  aria-label="Laugh"
+                  className="rounded-md p-1.5 text-sm transition-colors hover:bg-muted"
+                >
+                  😂{laughs > 0 && <span className="ml-0.5 text-xs">{laughs}</span>}
+                </button>
                 <button
                   type="button"
                   onClick={onFav}

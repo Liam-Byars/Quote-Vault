@@ -12,6 +12,7 @@ import {
   Trash2,
   Share2,
   Users,
+  ImageDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
@@ -43,6 +44,7 @@ import {
 import { useToggleFavorite, useDeleteQuote } from "@/hooks/use-quotes";
 import { StarRating } from "./star-rating";
 import { QrDialog } from "./qr-dialog";
+import { exportQuoteImage } from "./share-image";
 
 type Props = {
   quote: Quote;
@@ -165,6 +167,14 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setQrOpen(true)}>
                       <QrCode className="mr-2 h-4 w-4" /> QR code
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        exportQuoteImage(quote);
+                        toast.success("Image downloaded");
+                      }}
+                    >
+                      <ImageDown className="mr-2 h-4 w-4" /> Save as image
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem

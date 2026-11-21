@@ -18,6 +18,7 @@ import { GroupsView } from "@/components/quote/groups-view";
 import { GroupDetail } from "@/components/quote/group-detail";
 import { JoinGroupDialog } from "@/components/quote/join-group-dialog";
 import { LegalDialog } from "@/components/quote/legal-dialog";
+import { FeaturedQuotes } from "@/components/quote/featured-quotes";
 import { CloudStatus } from "@/components/quote/cloud-status";
 import { exportQuoteBook } from "@/components/quote/export-pdf";
 import { useAuth } from "@/hooks/use-auth";
@@ -242,6 +243,8 @@ export default function Page() {
 
           {tab === "vault" && (
             <>
+              <FeaturedQuotes quotes={quotes} />
+
               <QuoteStatsView
                 data={statsQuery.data}
                 isLoading={statsQuery.isLoading}

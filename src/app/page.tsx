@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, MessageSquareQuote, BookDown } from "lucide-react";
+import { Plus, MessageSquareQuote, BookDown, Wrench } from "lucide-react";
 import { toast } from "sonner";
+import { doc, onSnapshot } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,8 @@ import { JoinGroupDialog } from "@/components/quote/join-group-dialog";
 import { LegalDialog } from "@/components/quote/legal-dialog";
 import { CloudStatus } from "@/components/quote/cloud-status";
 import { exportQuoteBook } from "@/components/quote/export-pdf";
+import { useAuth } from "@/hooks/use-auth";
+import { db } from "@/lib/firebase";
 import {
   useQuotes,
   useQuoteStats,
@@ -31,6 +34,8 @@ import { APP_VERSION } from "@/lib/version";
 type Tab = "vault" | "groups";
 
 export default function Page() {
+  const { isAdmin } = useAuth();
+  const [maintenanceOn, setMaintenanceOn] = useState(false);
   const [tab, setTab] = useState<Tab>("vault");
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [filters, setFilters] = useState<QuoteFilters>({ sort: "newest" });
@@ -63,6 +68,17 @@ export default function Page() {
       setJoinCode(code);
       setJoinOpen(true);
     }
+  }, []);
+
+  // Check maintenance mode (anyone can read the config doc; admin can toggle).
+  // Admins bypass the maintenance screen so they can turn it off.
+  useEffect(() => {
+    if (!db) return;
+    return onSnapshot(
+      doc(db, "config", "maintenance"),
+      (snap) => setMaintenanceOn(snap.exists() && Boolean(snap.data()?.enabled)),
+      () => {}
+    );
   }, []);
 
   // Map groupId -> name for badge display on vault cards.
@@ -139,6 +155,25 @@ export default function Page() {
   const clearFilters = () => setFilters({ sort: filters.sort ?? "newest" });
 
   const showTabs = !(tab === "groups" && selectedGroupId);
+
+  // Maintenance mode: non-admin users see a downtime screen.
+  if (maintenanceOn && !isAdmin) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-center">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+          <Wrench className="h-8 w-8 text-primary" />
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight">Down for maintenance</h1>
+        <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+          Quote Vault is temporarily offline while we fix something. Check
+          back soon — your quotes are safe.
+        </p>
+        <p className="mt-6 text-[11px] text-muted-foreground/60">
+          v{APP_VERSION}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

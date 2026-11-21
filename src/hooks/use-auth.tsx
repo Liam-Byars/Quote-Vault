@@ -16,11 +16,13 @@ import {
   type User,
 } from "firebase/auth";
 import { auth, isFirebaseConfigured } from "@/lib/firebase";
+import { isAdminEmail } from "@/lib/admin";
 
 type AuthState = {
   user: User | null;
   loading: boolean;
   isFirebaseConfigured: boolean;
+  isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -29,6 +31,7 @@ const AuthContext = createContext<AuthState>({
   user: null,
   loading: true,
   isFirebaseConfigured,
+  isAdmin: false,
   signInWithGoogle: async () => {},
   signOut: async () => {},
 });
@@ -67,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       isFirebaseConfigured,
+      isAdmin: isAdminEmail(user?.email),
       signInWithGoogle,
       signOut,
     }),

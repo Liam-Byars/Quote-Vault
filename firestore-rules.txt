@@ -1,5 +1,5 @@
-FIRESTORE SECURITY RULES for Quote Vault (shared groups + real-time)
-=====================================================================
+FIRESTORE SECURITY RULES for Quote Vault (with admin + maintenance mode)
+=========================================================================
 
 HOW TO APPLY (one time, ~1 minute):
 
@@ -8,71 +8,68 @@ HOW TO APPLY (one time, ~1 minute):
 3. Left menu: Build -> Firestore Database -> Rules
 4. Delete everything in the editor, paste ALL the rules below, click Publish
 
-WHY: the app now stores group quotes in a shared spot
-(groups/{groupId}/quotes) so everyone in a group sees new quotes within
-seconds. The old rules blocked those writes, which made creating groups
-and sharing quotes fail.
+These rules add:
+- An admin account (lpbmusic5426@gmail.com) that can read ALL data
+- A config collection for maintenance mode (anyone can read, admin can write)
 
 ----- COPY EVERYTHING BELOW THIS LINE -----
 
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email == "lpbmusic5426@gmail.com";
+    }
+    function isGroupOwner(groupId) {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/groups/$(groupId)).data.ownerUid == request.auth.uid;
+    }
+    function isGroupMember(groupId) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid));
+    }
 
-    // Personal quotes — only you can read/write your own.
+    // Personal quotes — owner or admin can read/write.
     match /quotes/{quoteId} {
-      allow read, update, delete: if request.auth != null
-        && resource.data.uid == request.auth.uid;
-      allow create: if request.auth != null
-        && request.resource.data.uid == request.auth.uid;
+      allow get, list: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
     }
 
-    // Groups — signed-in users can read (needed to look up invite
-    // codes); only the owner can change or delete a group.
-    match /groups/{groupId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null
-        && request.resource.data.ownerUid == request.auth.uid;
-      allow update, delete: if request.auth != null
-        && resource.data.ownerUid == request.auth.uid;
-
-      // Joined members — one doc per user, doc id = their uid.
-      match /members/{memberId} {
-        allow read: if request.auth != null;
-        allow create: if request.auth != null
-          && request.auth.uid == memberId;
-        allow delete: if request.auth != null
-          && (request.auth.uid == memberId
-              || get(/databases/$(database)/documents/groups/$(groupId)).data.ownerUid == request.auth.uid);
-      }
-
-      // Shared group quotes — members see them in real time.
-      match /quotes/{quoteId} {
-        function isMember() {
-          return request.auth != null
-            && exists(/databases/$(database)/documents/users/$(request.auth.uid)/groupMemberships/$(groupId));
-        }
-        function isGroupOwner() {
-          return request.auth != null
-            && get(/databases/$(database)/documents/groups/$(groupId)).data.ownerUid == request.auth.uid;
-        }
-        allow read: if isMember();
-        allow create: if isMember()
-          && request.resource.data.uid == request.auth.uid;
-        allow update: if isMember();
-        allow delete: if isMember()
-          && (resource.data.uid == request.auth.uid || isGroupOwner());
-      }
+    // Config collection — maintenance mode flag etc.
+    // Anyone (even unsigned-in) can read so the app can check maintenance
+    // status before sign-in. Only admin can write.
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // Membership pointers — your own list; the group owner cleans them
-    // up when deleting a group.
+    // Membership pointers.
     match /users/{uid}/groupMemberships/{groupId} {
-      allow read, write: if request.auth != null
-        && (request.auth.uid == uid
-            || get(/databases/$(database)/documents/groups/$(groupId)).data.ownerUid == request.auth.uid);
+      allow read, write: if isSignedIn() && (request.auth.uid == uid || isGroupOwner(groupId));
+    }
+
+    // Groups — signed-in users can read; owner or admin can change.
+    match /groups/{groupId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if isSignedIn() && (isGroupOwner(groupId) || isAdmin());
+    }
+
+    // Group members.
+    match /groups/{groupId}/members/{uid} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isSignedIn() && (request.auth.uid == uid || isGroupOwner(groupId) || isAdmin());
+    }
+
+    // Shared group quotes — members or admin can read; author or admin can delete.
+    match /groups/{groupId}/quotes/{quoteId} {
+      allow get, list: if isGroupMember(groupId) || isAdmin();
+      allow create: if isGroupMember(groupId) && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin()) && isGroupMember(groupId);
     }
   }
 }
-
------ COPY EVERYTHING ABOVE THIS LINE -----

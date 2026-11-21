@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { LogOut, Cloud, CloudOff, Loader2, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { LogOut, Cloud, CloudOff, Loader2, ChevronDown, Shield, Wrench } from "lucide-react";
 import { toast } from "sonner";
+import { doc, setDoc, deleteDoc, onSnapshot } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,10 +15,45 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
 import { isFirebaseConfigured } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 
 export function UserMenu() {
-  const { user, loading, signInWithGoogle, signOut } = useAuth();
+  const { user, loading, signInWithGoogle, signOut, isAdmin } = useAuth();
   const [busy, setBusy] = useState(false);
+  const [maintenanceOn, setMaintenanceOn] = useState(false);
+
+  // Subscribe to the maintenance mode flag in Firestore (admin only).
+  useEffect(() => {
+    if (!isAdmin || !db) return;
+    return onSnapshot(
+      doc(db, "config", "maintenance"),
+      (snap) => setMaintenanceOn(snap.exists() && Boolean(snap.data()?.enabled)),
+      () => {} // silent — errors handled by cloud-sync
+    );
+  }, [isAdmin]);
+
+  const toggleMaintenance = async () => {
+    if (!db) return;
+    setBusy(true);
+    try {
+      if (maintenanceOn) {
+        await deleteDoc(doc(db, "config", "maintenance"));
+        toast.success("Maintenance mode OFF — app is live");
+      } else {
+        await setDoc(doc(db, "config", "maintenance"), {
+          enabled: true,
+          message: "Quote Vault is temporarily down for maintenance.",
+          updatedAt: new Date().toISOString(),
+        });
+        toast.warning("Maintenance mode ON — users see a downtime screen");
+      }
+      setMaintenanceOn(!maintenanceOn);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't toggle maintenance");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   // Firebase not configured at all → local-only mode badge.
   if (!isFirebaseConfigured) {
@@ -118,8 +154,17 @@ export function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="flex items-center gap-1.5 text-xs font-normal text-muted-foreground">
-          <Cloud className="h-3.5 w-3.5 text-primary" />
-          Synced to cloud
+          {isAdmin ? (
+            <span className="flex items-center gap-1 text-primary font-semibold">
+              <Shield className="h-3.5 w-3.5" />
+              Admin
+            </span>
+          ) : (
+            <>
+              <Cloud className="h-3.5 w-3.5 text-primary" />
+              Synced to cloud
+            </>
+          )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <div className="px-2 py-1.5">
@@ -131,6 +176,12 @@ export function UserMenu() {
           )}
         </div>
         <DropdownMenuSeparator />
+        {isAdmin && (
+          <DropdownMenuItem onClick={toggleMaintenance} disabled={busy}>
+            <Wrench className="mr-2 h-4 w-4" />
+            {maintenanceOn ? "Turn off maintenance" : "Turn on maintenance"}
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={onSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
           Sign out

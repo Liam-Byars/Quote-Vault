@@ -20,6 +20,9 @@ import { JoinGroupDialog } from "@/components/quote/join-group-dialog";
 import { LegalDialog } from "@/components/quote/legal-dialog";
 import { FeaturedQuotes } from "@/components/quote/featured-quotes";
 import { CloudStatus } from "@/components/quote/cloud-status";
+import { ThemeCustomizer } from "@/components/quote/theme-customizer";
+import { Reminders } from "@/components/quote/reminders";
+import { AdminView } from "@/components/quote/admin-view";
 import { exportQuoteBook } from "@/components/quote/export-pdf";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase";
@@ -32,7 +35,7 @@ import { useGroups } from "@/hooks/use-groups";
 import { parseTags, type Quote } from "@/lib/quote-types";
 import { APP_VERSION } from "@/lib/version";
 
-type Tab = "vault" | "groups";
+type Tab = "vault" | "groups" | "admin";
 
 export default function Page() {
   const { isAdmin } = useAuth();
@@ -215,6 +218,7 @@ export default function Page() {
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Add quote</span>
             </Button>
+            <ThemeCustomizer />
             <UserMenu />
             <ThemeToggle />
           </div>
@@ -238,12 +242,21 @@ export default function Page() {
                 label="Groups"
                 badge={groups.length || undefined}
               />
+              {isAdmin && (
+                <TabButton
+                  active={tab === "admin"}
+                  onClick={() => selectTab("admin")}
+                  label="Admin"
+                />
+              )}
             </div>
           )}
 
           {tab === "vault" && (
             <>
               <FeaturedQuotes quotes={quotes} />
+
+              <Reminders quotes={quotes} />
 
               <QuoteStatsView
                 data={statsQuery.data}
@@ -284,6 +297,8 @@ export default function Page() {
           {tab === "groups" && !selectedGroupId && (
             <GroupsView onOpenGroup={setSelectedGroupId} />
           )}
+
+          {tab === "admin" && isAdmin && <AdminView />}
 
           {tab === "groups" && selectedGroupId && (
             <GroupDetail

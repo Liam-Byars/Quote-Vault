@@ -66,14 +66,22 @@ export function LegalDialog({ open, onOpenChange }: Props) {
                 activity. You need to meet Google&apos;s minimum age
                 requirement to use Google sign-in.
               </Section>
-              <Section title="5. The service">
+              <Section title="5. Admin & maintenance">
+                The app has one admin account (the project owner). The admin
+                can see all quotes and groups for moderation purposes, and can
+                temporarily put the app into maintenance mode (a downtime
+                screen) if there&apos;s a bug or issue. The admin can&apos;t
+                see your Google password — only the quotes and groups you
+                create in the app.
+              </Section>
+              <Section title="6. The service">
                 Quote Vault is provided &quot;as is&quot; without warranties.
                 It&apos;s a personal project — it may have bugs, and features
                 may change or be discontinued. Don&apos;t rely on it as your
                 only copy of anything important; you can export your quotes as
                 a PDF anytime.
               </Section>
-              <Section title="6. Changes">
+              <Section title="7. Changes">
                 If these terms change, the updated version will appear here.
                 Continued use after changes means you accept them.
               </Section>
@@ -112,12 +120,23 @@ export function LegalDialog({ open, onOpenChange }: Props) {
                 group are visible to that group&apos;s members — that&apos;s
                 the point of groups. Anyone with a group&apos;s invite link or
                 QR code can join that group.
+                <br /><br />
+                <strong>Admin access:</strong> the app admin (the project
+                owner) can see all quotes and groups for moderation — to
+                respond to reports, fix issues, or remove harmful content. The
+                admin is a single identified account, not a team.
               </Section>
               <Section title="Deleting your data">
                 Deleting a quote removes it (from your browser, or from the
                 cloud when signed in). Clearing your browser data removes all
                 local (not-signed-in) quotes. To delete cloud data, delete
                 your quotes/groups in the app, or ask for help.
+              </Section>
+              <Section title="Maintenance mode">
+                The admin can temporarily put the app into maintenance mode.
+                When this happens, you&apos;ll see a downtime screen instead of
+                the app. This is used for fixing bugs or addressing issues.
+                Your data is never affected by maintenance mode.
               </Section>
               <Section title="Where data lives">
                 Cloud data is stored in Google Firebase (Firestore), which

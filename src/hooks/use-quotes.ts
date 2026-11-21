@@ -86,8 +86,8 @@ function computeStats(quotes: Quote[]): QuoteStats {
   ).toISOString();
   const counts = new Map<string, number>();
   for (const q of quotes) {
-    const key = q.author.trim();
-    if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
+    const key = q.author.trim() || "Unknown";
+    counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   const topAuthors = [...counts.entries()]
     .map(([author, count]) => ({ author, count }))
@@ -97,13 +97,29 @@ function computeStats(quotes: Quote[]): QuoteStats {
     ? Math.round((quotes.reduce((s, q) => s + q.rating, 0) / quotes.length) * 10) /
       10
     : 0;
+
+  // Last 6 months of quote counts (by dateSaid or createdAt as fallback).
+  const monthlyCounts: { label: string; count: number }[] = [];
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const start = new Date(d.getFullYear(), d.getMonth(), 1).toISOString();
+    const end = new Date(d.getFullYear(), d.getMonth() + 1, 1).toISOString();
+    const count = quotes.filter((q) => {
+      const date = q.dateSaid ?? q.createdAt;
+      return date >= start && date < end;
+    }).length;
+    monthlyCounts.push({ label: monthNames[d.getMonth()], count });
+  }
+
   return {
     total: quotes.length,
     favorites: quotes.filter((q) => q.favorite).length,
-    thisMonth: quotes.filter((q) => q.dateSaid >= monthStart).length,
+    thisMonth: quotes.filter((q) => (q.dateSaid ?? q.createdAt) >= monthStart).length,
     uniqueAuthors: counts.size,
     avgRating: avg,
     topAuthors,
+    monthlyCounts,
   };
 }
 

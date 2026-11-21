@@ -33,6 +33,7 @@ export type QuoteStats = {
   uniqueAuthors: number;
   avgRating: number;
   topAuthors: { author: string; count: number }[];
+  monthlyCounts: { label: string; count: number }[];
 };
 
 // Tag chips parsed from the comma-separated string.

@@ -54,7 +54,7 @@ export function QuoteFormDrawer(props: Props) {
     <Drawer open={open} onOpenChange={onOpenChange}>
       {/* Use the same data-variant as the base component so tailwind-merge
           replaces (not just supplements) the default 80vh cap. */}
-      <DrawerContent className="data-[vaul-drawer-direction=bottom]:max-h-[92vh]">
+      <DrawerContent className="data-[vaul-drawer-direction=bottom]:max-h-[85dvh]">
         {open ? (
           <QuoteFormInner key={key} {...props} />
         ) : null}
@@ -235,7 +235,7 @@ function QuoteFormInner({
     // so the form inside can actually flex-shrink and become the scrollable
     // region — without this, tall forms push the footer off-screen and touch
     // scrolling appears broken on phones.
-    <div className="mx-auto flex max-h-[calc(92vh-44px)] w-full max-w-lg flex-col">
+    <div className="mx-auto flex max-h-[calc(85dvh-44px)] w-full max-w-lg flex-col">
       <DrawerHeader className="shrink-0 pb-2">
         <DrawerTitle className="flex items-center gap-2 text-lg">
           <Sparkles className="h-4 w-4 text-primary" />

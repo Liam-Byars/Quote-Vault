@@ -10,6 +10,7 @@ import {
   UserPlus,
   Users,
   Plus,
+  Copy,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
@@ -213,6 +214,26 @@ export function GroupDetail({
         >
           <Plus className="h-4 w-4" />
           Add quote
+        </Button>
+      </div>
+
+      {/* Invite code — visible + copyable */}
+      <div className="flex items-center gap-2 rounded-lg border bg-card p-2.5 shadow-sm">
+        <span className="shrink-0 text-xs text-muted-foreground">Invite code:</span>
+        <code className="flex-1 truncate font-mono text-xs">{group.inviteCode}</code>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 shrink-0 gap-1 px-2"
+          onClick={() => {
+            if (typeof navigator !== "undefined") {
+              navigator.clipboard.writeText(group.inviteCode);
+              toast.success("Invite code copied");
+            }
+          }}
+        >
+          <Copy className="h-3.5 w-3.5" />
+          Copy
         </Button>
       </div>
 

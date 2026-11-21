@@ -31,7 +31,7 @@ export type QuoteFilters = {
   author?: string;
   tag?: string;
   favorite?: boolean;
-  sort?: "newest" | "oldest" | "rating" | "favorite";
+  sort?: "newest" | "oldest" | "rating" | "favorite" | "laughs";
   groupId?: string;
   ungrouped?: boolean;
   dateFrom?: string;
@@ -84,6 +84,11 @@ function applyFilters(quotes: Quote[], filters: QuoteFilters): Quote[] {
     if (sort === "oldest") return aDate < bDate ? -1 : 1;
     if (sort === "rating") return b.rating - a.rating;
     if (sort === "favorite") return Number(b.favorite) - Number(a.favorite);
+    if (sort === "laughs") {
+      const al = typeof localStorage !== "undefined" ? parseInt(localStorage.getItem(`laugh-${a.id}`) || "0", 10) : 0;
+      const bl = typeof localStorage !== "undefined" ? parseInt(localStorage.getItem(`laugh-${b.id}`) || "0", 10) : 0;
+      return bl - al;
+    }
     return bDate < aDate ? -1 : 1; // newest
   });
   return out;

@@ -74,6 +74,28 @@ export default function Page() {
     }
   }, []);
 
+  // Keyboard shortcuts: N = new quote, / = focus search
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (e.key === "n" || e.key === "N") {
+        e.preventDefault();
+        setEditing(null);
+        setPresetGroupId(null);
+        setDrawerOpen(true);
+      } else if (e.key === "/") {
+        e.preventDefault();
+        const search = document.querySelector<HTMLInputElement>(
+          'input[placeholder*="Search"]'
+        );
+        search?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   // Check maintenance mode (anyone can read the config doc; admin can toggle).
   // Admins bypass the maintenance screen so they can turn it off.
   useEffect(() => {

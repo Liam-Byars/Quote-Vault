@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Sparkles, X } from "lucide-react";
+import { Loader2, Sparkles, X, Mic } from "lucide-react";
 import { toast } from "sonner";
 import {
   Drawer,
@@ -132,6 +132,28 @@ function QuoteFormInner({
     makeInitial(editing, presetGroupId)
   );
   const [tagDraft, setTagDraft] = useState("");
+  const [listening, setListening] = useState(false);
+
+  const startVoice = () => {
+    const SR = (window as unknown as { SpeechRecognition?: typeof window.SpeechRecognition; webkitSpeechRecognition?: typeof window.SpeechRecognition }).SpeechRecognition || (window as unknown as { webkitSpeechRecognition?: typeof window.SpeechRecognition }).webkitSpeechRecognition;
+    if (!SR) {
+      toast.error("Voice input not supported in this browser (try Chrome)");
+      return;
+    }
+    const recognition = new SR();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = Array.from(event.results)
+        .map((r) => r[0].transcript)
+        .join("");
+      set("text", transcript);
+    };
+    recognition.onend = () => setListening(false);
+    recognition.onerror = () => setListening(false);
+    recognition.start();
+    setListening(true);
+  };
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -236,15 +258,25 @@ function QuoteFormInner({
           <Label htmlFor="q-text">
             What did they say? <span className="text-destructive">*</span>
           </Label>
-          <Textarea
-            id="q-text"
-            autoFocus
-            placeholder="The exact words, as best as you can remember..."
-            value={form.text}
-            onChange={(e) => set("text", e.target.value)}
-            rows={3}
-            className="resize-none"
-          />
+          <div className="relative">
+            <Textarea
+              id="q-text"
+              autoFocus
+              placeholder="The exact words, as best as you can remember..."
+              value={form.text}
+              onChange={(e) => set("text", e.target.value)}
+              rows={3}
+              className="resize-none pr-10"
+            />
+            <button
+              type="button"
+              onClick={startVoice}
+              className="absolute right-2 top-2 rounded-md p-1.5 transition-colors hover:bg-muted"
+              aria-label="Voice input"
+            >
+              <Mic className={listening ? "h-4 w-4 text-primary animate-pulse" : "h-4 w-4 text-muted-foreground"} />
+            </button>
+          </div>
         </div>
 
         {/* Author + date */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LogOut, Cloud, CloudOff, Loader2, ChevronDown, Shield, Wrench } from "lucide-react";
+import { LogOut, Cloud, CloudOff, Loader2, ChevronDown, Shield, Wrench, Coffee } from "lucide-react";
 import { toast } from "sonner";
 import { doc, setDoc, deleteDoc, onSnapshot } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
-import { isFirebaseConfigured } from "@/lib/firebase";
-import { db } from "@/lib/firebase";
+import { isFirebaseConfigured, db } from "@/lib/firebase";
+import { TIP_JAR_URL } from "@/lib/admin";
 
 export function UserMenu() {
   const { user, loading, signInWithGoogle, signOut, isAdmin } = useAuth();
@@ -182,6 +182,12 @@ export function UserMenu() {
             {maintenanceOn ? "Turn off maintenance" : "Turn on maintenance"}
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem
+          onClick={() => window.open(TIP_JAR_URL, "_blank")}
+        >
+          <Coffee className="mr-2 h-4 w-4" />
+          Support Quote Vault
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={onSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
           Sign out

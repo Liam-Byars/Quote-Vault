@@ -135,6 +135,7 @@ export function QuoteFiltersBar({
             <SelectItem value="oldest">Oldest first</SelectItem>
             <SelectItem value="rating">Funniest</SelectItem>
             <SelectItem value="favorite">Favorites</SelectItem>
+            <SelectItem value="laughs">Most laughed</SelectItem>
           </SelectContent>
         </Select>
 

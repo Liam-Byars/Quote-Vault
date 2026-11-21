@@ -20,7 +20,8 @@ service cloud.firestore {
     function isSignedIn() { return request.auth != null; }
     function isAdmin() {
       return isSignedIn()
-        && request.auth.token.email == "lpbmusic5426@gmail.com";
+        && (request.auth.token.email == "lpbmusic5426@gmail.com"
+            || request.auth.token.email == "lpbyars@gmail.com");
     }
     function isGroupOwner(groupId) {
       return isSignedIn()

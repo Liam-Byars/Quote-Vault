@@ -144,8 +144,8 @@ export function LegalDialog({ open, onOpenChange }: Props) {
                 not-signed-in data never leaves your device.
               </Section>
               <Section title="Contact">
-                Questions about this policy? Reach out through the channel
-                where you got this app.
+                Questions about this policy or the app? Email us at{" "}
+                <strong>support@lpbenterprises.com</strong>
               </Section>
             </TabsContent>
           </div>

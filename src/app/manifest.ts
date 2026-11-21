@@ -1,5 +1,9 @@
 import type { MetadataRoute } from "next";
 
+// Required for static export (output: "export") — without this, Next.js
+// throws "dynamic not configured on route /manifest.webmanifest".
+export const dynamic = "force-static";
+
 // PWA manifest — makes Quote Vault installable on phones and desktops.
 // After this is deployed, users can "Add to Home Screen" / "Install app"
 // and it'll appear as a native-style app icon.

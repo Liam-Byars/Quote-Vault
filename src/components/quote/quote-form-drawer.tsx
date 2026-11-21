@@ -288,10 +288,13 @@ function QuoteFormInner({
             <Input
               id="q-author"
               list="authors-list"
-              placeholder="e.g. Grandma"
+              placeholder="e.g. Grandma, Liam"
               value={form.author}
               onChange={(e) => set("author", e.target.value)}
             />
+            <p className="text-[10px] text-muted-foreground">
+              Separate multiple people with commas
+            </p>
             <datalist id="authors-list">
               {knownAuthors.map((a) => (
                 <option key={a} value={a} />

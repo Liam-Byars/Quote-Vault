@@ -32,7 +32,7 @@ import {
   type QuoteFilters,
 } from "@/hooks/use-quotes";
 import { useGroups } from "@/hooks/use-groups";
-import { parseTags, type Quote } from "@/lib/quote-types";
+import { parseAuthors, parseTags, type Quote } from "@/lib/quote-types";
 import { APP_VERSION } from "@/lib/version";
 
 type Tab = "vault" | "groups" | "stats" | "admin";
@@ -120,7 +120,7 @@ export default function Page() {
     const a = new Set<string>();
     const t = new Set<string>();
     for (const q of quotes) {
-      if (q.author) a.add(q.author);
+      for (const author of parseAuthors(q.author)) a.add(author);
       for (const tag of parseTags(q.tags)) t.add(tag);
     }
     return {

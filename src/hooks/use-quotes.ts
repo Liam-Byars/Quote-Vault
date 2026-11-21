@@ -5,7 +5,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import type { Quote, QuoteInput, QuoteStats } from "@/lib/quote-types";
+import { parseAuthors, type Quote, type QuoteInput, type QuoteStats } from "@/lib/quote-types";
 import { withTimeout } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useCloudSync } from "@/lib/cloud-sync";
@@ -53,7 +53,11 @@ function applyFilters(quotes: Quote[], filters: QuoteFilters): Quote[] {
   }
   if (filters.author) {
     const a = filters.author.toLowerCase();
-    out = out.filter((x) => x.author.toLowerCase().includes(a));
+    out = out.filter((x) =>
+      parseAuthors(x.author).some(
+        (name) => name.toLowerCase().includes(a)
+      )
+    );
   }
   if (filters.tag) {
     const t = filters.tag.toLowerCase();
@@ -101,8 +105,14 @@ function computeStats(quotes: Quote[]): QuoteStats {
   ).toISOString();
   const counts = new Map<string, number>();
   for (const q of quotes) {
-    const key = q.author.trim() || "Unknown";
-    counts.set(key, (counts.get(key) ?? 0) + 1);
+    const authors = parseAuthors(q.author);
+    if (authors.length === 0) {
+      counts.set("Unknown", (counts.get("Unknown") ?? 0) + 1);
+    } else {
+      for (const author of authors) {
+        counts.set(author, (counts.get(author) ?? 0) + 1);
+      }
+    }
   }
   const topAuthors = [...counts.entries()]
     .map(([author, count]) => ({ author, count }))

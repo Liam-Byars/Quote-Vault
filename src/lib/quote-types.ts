@@ -36,6 +36,16 @@ export type QuoteStats = {
   monthlyCounts: { label: string; count: number }[];
 };
 
+// Parse multiple authors from a comma-separated string.
+// "Liam, Grandma" → ["Liam", "Grandma"]
+export function parseAuthors(author: string): string[] {
+  if (!author) return [];
+  return author
+    .split(/[,;]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 // Tag chips parsed from the comma-separated string.
 export function parseTags(tags: string): string[] {
   if (!tags) return [];

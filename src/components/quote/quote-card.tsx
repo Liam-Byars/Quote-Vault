@@ -38,6 +38,7 @@ import { Button } from "@/components/ui/button";
 import {
   authorColor,
   initials,
+  parseAuthors,
   parseTags,
   type Quote,
 } from "@/lib/quote-types";
@@ -72,6 +73,8 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
     return stored ? parseInt(stored, 10) || 0 : 0;
   });
   const tags = parseTags(quote.tags);
+  const authors = parseAuthors(quote.author || "Unknown");
+  const primaryAuthor = authors[0] || "Unknown";
 
   const onLaugh = () => {
     const next = laughs + 1;
@@ -125,11 +128,11 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
           <div
             className={
               "flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold " +
-              authorColor(quote.author || "Unknown")
+              authorColor(primaryAuthor)
             }
             aria-hidden
           >
-            {initials(quote.author || "Unknown")}
+            {initials(primaryAuthor)}
           </div>
 
           {/* Body */}

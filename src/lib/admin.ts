@@ -17,9 +17,8 @@ export const ADMIN_EMAILS = [
 export const COMPANY_NAME = "LPBEnterprises";
 export const SUPPORT_EMAIL = "support@lpbenterprises.com";
 
-// Tip jar link. Sign up at ko-fi.com (free) and replace this URL.
-// At 16, have a parent/guardian create the Ko-fi account and link their PayPal.
-export const TIP_JAR_URL = "https://ko-fi.com/lpbenterprises";
+// Tip jar link — Cash App. Users tap "Support Quote Vault" → opens Cash App.
+export const TIP_JAR_URL = "https://cash.app/$lpbyars";
 
 export function isAdminEmail(
   email: string | null | undefined

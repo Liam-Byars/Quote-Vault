@@ -34,9 +34,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
 import { authorColor, initials } from "@/lib/quote-types";
 import { inviteUrl } from "@/lib/group-types";
-import { useGroup, useRemoveMember, useDeleteGroup } from "@/hooks/use-groups";
+import { useGroup, useRemoveMember, useDeleteGroup, useUpdateGroup, useUpdateMemberName } from "@/hooks/use-groups";
 import type { Quote } from "@/lib/quote-types";
 import { QuoteCard } from "./quote-card";
 import { QrDialog } from "./qr-dialog";
@@ -67,11 +68,46 @@ export function GroupDetail({
   const { data, isLoading } = useGroup(groupId);
   const removeMember = useRemoveMember();
   const deleteGroup = useDeleteGroup();
+  const updateGroup = useUpdateGroup();
+  const updateMemberName = useUpdateMemberName();
   const [qrOpen, setQrOpen] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [memberDraft, setMemberDraft] = useState("");
 
   const group = data?.group;
+
+  const saveName = async () => {
+    const trimmed = nameDraft.trim();
+    setEditingName(false);
+    if (!group || !trimmed || trimmed === group.name) return;
+    try {
+      await updateGroup.mutateAsync({ id: group.id, input: { name: trimmed } });
+      toast.success("Group renamed");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to rename");
+    }
+  };
+
+  const saveMemberName = async (memberId: string, oldName: string) => {
+    const trimmed = memberDraft.trim();
+    setEditingMemberId(null);
+    if (!trimmed || trimmed === oldName) return;
+    try {
+      await updateMemberName.mutateAsync({
+        groupId,
+        memberId,
+        name: trimmed,
+        named: memberId.startsWith("named-"),
+      });
+      toast.success("Member renamed");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to rename");
+    }
+  };
 
   const onRemoveMember = async (
     memberId: string,
@@ -147,9 +183,27 @@ export function GroupDetail({
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-lg font-bold leading-tight">
-            {group.name}
-          </h2>
+          {editingName ? (
+            <Input
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              onBlur={saveName}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveName();
+                if (e.key === "Escape") setEditingName(false);
+              }}
+              autoFocus
+              className="h-8 text-lg font-bold"
+            />
+          ) : (
+            <h2
+              className="truncate text-lg font-bold leading-tight cursor-text hover:text-primary"
+              onClick={() => { setNameDraft(group.name); setEditingName(true); }}
+              title="Click to rename"
+            >
+              {group.name}
+            </h2>
+          )}
           {group.description && (
             <p className="truncate text-xs text-muted-foreground">
               {group.description}
@@ -257,7 +311,29 @@ export function GroupDetail({
               >
                 {initials(m.name)}
               </span>
-              <span className="text-xs font-medium">{m.name}</span>
+              <span className="text-xs font-medium">
+                {editingMemberId === m.id ? (
+                  <Input
+                    value={memberDraft}
+                    onChange={(e) => setMemberDraft(e.target.value)}
+                    onBlur={() => saveMemberName(m.id, m.name)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") saveMemberName(m.id, m.name);
+                      if (e.key === "Escape") setEditingMemberId(null);
+                    }}
+                    autoFocus
+                    className="h-5 w-20 text-xs"
+                  />
+                ) : (
+                  <span
+                    className="cursor-text hover:text-primary"
+                    onClick={() => { setMemberDraft(m.name); setEditingMemberId(m.id); }}
+                    title="Click to rename"
+                  >
+                    {m.name}
+                  </span>
+                )}
+              </span>
               {m.role === "owner" && (
                 <Badge className="h-4 px-1.5 text-[9px]">owner</Badge>
               )}

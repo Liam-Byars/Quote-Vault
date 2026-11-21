@@ -354,6 +354,38 @@ export async function addCloudNamedMember(
   });
 }
 
+export async function updateCloudMemberName(args: {
+  groupId: string;
+  memberId: string;
+  named: boolean;
+  name: string;
+}): Promise<void> {
+  const firestore = requireDb();
+  const { groupId, memberId, named, name } = args;
+
+  if (named) {
+    const gRef = doc(firestore, "groups", groupId);
+    const gSnap = await getDoc(gRef);
+    if (!gSnap.exists()) throw new Error("Group not found");
+    const data = gSnap.data();
+    const members = Array.isArray(data.members)
+      ? [...(data.members as Array<Record<string, unknown>>)]
+      : [];
+    const idx = members.findIndex((m) => String(m.id ?? "") === memberId);
+    if (idx === -1) throw new Error("Member not found");
+    members[idx] = { ...members[idx], name };
+    await updateDoc(gRef, {
+      members,
+      updatedAt: new Date().toISOString(),
+    });
+    return;
+  }
+
+  await updateDoc(doc(firestore, "groups", groupId, "members", memberId), {
+    name,
+  });
+}
+
 export async function removeCloudMember(args: {
   groupId: string;
   memberId: string;

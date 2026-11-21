@@ -406,6 +406,21 @@ export async function addLocalMember(
   await db.put("groups", doc);
 }
 
+export async function updateLocalMemberName(
+  groupId: string,
+  memberId: string,
+  name: string
+): Promise<void> {
+  const db = await getDB();
+  const doc = (await db.get("groups", groupId)) as GroupDoc | undefined;
+  if (!doc) throw new Error("Group not found");
+  const member = doc.members.find((m) => m.id === memberId);
+  if (!member) throw new Error("Member not found");
+  member.name = name;
+  doc.updatedAt = new Date().toISOString();
+  await db.put("groups", doc);
+}
+
 export async function removeLocalMember(
   groupId: string,
   memberId: string

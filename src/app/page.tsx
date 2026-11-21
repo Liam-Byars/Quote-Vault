@@ -35,7 +35,7 @@ import { useGroups } from "@/hooks/use-groups";
 import { parseTags, type Quote } from "@/lib/quote-types";
 import { APP_VERSION } from "@/lib/version";
 
-type Tab = "vault" | "groups" | "admin";
+type Tab = "vault" | "groups" | "stats" | "admin";
 
 export default function Page() {
   const { isAdmin } = useAuth();
@@ -264,6 +264,11 @@ export default function Page() {
                 label="Groups"
                 badge={groups.length || undefined}
               />
+              <TabButton
+                active={tab === "stats"}
+                onClick={() => selectTab("stats")}
+                label="Stats"
+              />
               {isAdmin && (
                 <TabButton
                   active={tab === "admin"}
@@ -279,11 +284,6 @@ export default function Page() {
               <FeaturedQuotes quotes={quotes} />
 
               <Reminders quotes={quotes} />
-
-              <QuoteStatsView
-                data={statsQuery.data}
-                isLoading={statsQuery.isLoading}
-              />
 
               <QuoteFiltersBar
                 filters={filters}
@@ -318,6 +318,13 @@ export default function Page() {
 
           {tab === "groups" && !selectedGroupId && (
             <GroupsView onOpenGroup={setSelectedGroupId} />
+          )}
+
+          {tab === "stats" && (
+            <QuoteStatsView
+              data={statsQuery.data}
+              isLoading={statsQuery.isLoading}
+            />
           )}
 
           {tab === "admin" && isAdmin && <AdminView />}

@@ -20,6 +20,7 @@ import {
   deleteCloudGroup,
   addCloudNamedMember,
   removeCloudMember,
+  updateCloudMemberName,
   joinCloudGroupByCode,
 } from "@/lib/firestore-data";
 import {
@@ -29,6 +30,7 @@ import {
   updateLocalGroup,
   deleteLocalGroup,
   addLocalMember,
+  updateLocalMemberName,
   removeLocalMember,
   joinLocalGroup,
 } from "@/lib/local-db";
@@ -220,6 +222,40 @@ export function useRemoveMember() {
         }
       }
       await removeLocalMember(groupId, memberId);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["groups", "local"] });
+    },
+  });
+}
+
+export function useUpdateMemberName() {
+  const { user } = useAuth();
+  const cloud = useCloudSync();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      groupId,
+      memberId,
+      name,
+      named,
+    }: {
+      groupId: string;
+      memberId: string;
+      name: string;
+      named: boolean;
+    }) => {
+      if (user && !cloud.error) {
+        try {
+          await withTimeout(
+            updateCloudMemberName({ groupId, memberId, named, name })
+          );
+          return;
+        } catch (err) {
+          cloud.reportWriteError(err);
+        }
+      }
+      await updateLocalMemberName(groupId, memberId, name);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["groups", "local"] });

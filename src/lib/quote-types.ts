@@ -4,7 +4,7 @@ export type Quote = {
   id: string;
   text: string;
   author: string;
-  dateSaid: string; // ISO string
+  dateSaid: string | null; // ISO string or null if date unknown
   context: string | null;
   tags: string; // comma-separated
   rating: number; // 1-5
@@ -18,7 +18,7 @@ export type Quote = {
 export type QuoteInput = {
   text: string;
   author: string;
-  dateSaid: string; // ISO string
+  dateSaid: string | null; // ISO string or null
   context?: string | null;
   tags?: string;
   rating?: number;

@@ -50,7 +50,8 @@ type Props = {
   groupName?: string | null;
 };
 
-function safeFormat(iso: string, fmt: string): string {
+function safeFormat(iso: string | null, fmt: string): string {
+  if (!iso) return "Date unknown";
   try {
     return format(parseISO(iso), fmt);
   } catch {
@@ -87,7 +88,7 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
   };
 
   const onShare = async () => {
-    const shareText = `"${quote.text}" — ${quote.author}`;
+    const shareText = `"${quote.text}" — ${quote.author || "Unknown"}`;
     try {
       if (typeof navigator !== "undefined" && navigator.share) {
         await navigator.share({ title: "Quote Vault", text: shareText });
@@ -111,11 +112,11 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
           <div
             className={
               "flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold " +
-              authorColor(quote.author)
+              authorColor(quote.author || "Unknown")
             }
             aria-hidden
           >
-            {initials(quote.author)}
+            {initials(quote.author || "Unknown")}
           </div>
 
           {/* Body */}
@@ -124,7 +125,7 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="truncate font-semibold leading-tight text-foreground">
-                  {quote.author}
+                  {quote.author || "Unknown"}
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
                   {safeFormat(quote.dateSaid, "MMM d, yyyy")}
@@ -233,7 +234,7 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this quote?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove the quote by {quote.author}. This
+              This will permanently remove the quote by {quote.author || "Unknown"}. This
               action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -254,8 +255,8 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
         onOpenChange={setQrOpen}
         title="Share this quote"
         description="Scan to read the quote, or copy the text to share it."
-        payload={`"${quote.text}" — ${quote.author}`}
-        caption={`"${quote.text}" — ${quote.author}`}
+        payload={`"${quote.text}" — ${quote.author || "Unknown"}`}
+        caption={`"${quote.text}" — ${quote.author || "Unknown"}`}
       />
     </>
   );

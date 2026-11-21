@@ -69,10 +69,12 @@ function applyFilters(quotes: Quote[], filters: QuoteFilters): Quote[] {
 
   const sort = filters.sort ?? "newest";
   out = [...out].sort((a, b) => {
-    if (sort === "oldest") return a.dateSaid < b.dateSaid ? -1 : 1;
+    const aDate = a.dateSaid ?? "";
+    const bDate = b.dateSaid ?? "";
+    if (sort === "oldest") return aDate < bDate ? -1 : 1;
     if (sort === "rating") return b.rating - a.rating;
     if (sort === "favorite") return Number(b.favorite) - Number(a.favorite);
-    return b.dateSaid < a.dateSaid ? -1 : 1; // newest
+    return bDate < aDate ? -1 : 1; // newest
   });
   return out;
 }

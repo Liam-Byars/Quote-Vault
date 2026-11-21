@@ -200,7 +200,9 @@ export async function fetchLocalQuotes(): Promise<Quote[]> {
   const db = await getDB();
   const all = (await db.getAll("quotes")) as Quote[];
   all.sort((a, b) => {
-    if (a.dateSaid !== b.dateSaid) return b.dateSaid < a.dateSaid ? -1 : 1;
+    const aDate = a.dateSaid ?? "";
+    const bDate = b.dateSaid ?? "";
+    if (aDate !== bDate) return bDate < aDate ? -1 : 1;
     return b.createdAt < a.createdAt ? -1 : 1;
   });
   return all;

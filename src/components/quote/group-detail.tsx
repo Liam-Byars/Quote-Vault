@@ -302,6 +302,8 @@ export function GroupDetail({
         open={addMemberOpen}
         onOpenChange={setAddMemberOpen}
         groupId={group.id}
+        inviteCode={group.inviteCode}
+        groupName={group.name}
       />
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>

@@ -51,7 +51,7 @@ export function mapQuoteDoc(
     id,
     text: String(data.text ?? ""),
     author: String(data.author ?? ""),
-    dateSaid: String(data.dateSaid ?? new Date().toISOString()),
+    dateSaid: (data.dateSaid as string | null) ?? null,
     context: (data.context as string) ?? null,
     tags: String(data.tags ?? ""),
     rating: Number(data.rating ?? 3),

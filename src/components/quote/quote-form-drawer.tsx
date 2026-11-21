@@ -80,11 +80,12 @@ function todayISO(): string {
   return new Date(d.getTime() - tz).toISOString().slice(0, 10);
 }
 
-function dateToInput(iso: string): string {
+function dateToInput(iso: string | null): string {
+  if (!iso) return "";
   try {
     return new Date(iso).toISOString().slice(0, 10);
   } catch {
-    return todayISO();
+    return "";
   }
 }
 
@@ -165,7 +166,7 @@ function QuoteFormInner({
     .map((s) => s.trim())
     .filter(Boolean);
 
-  const valid = form.text.trim().length > 0 && form.author.trim().length > 0;
+  const valid = form.text.trim().length > 0;
 
   const submit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -176,7 +177,7 @@ function QuoteFormInner({
     const payload = {
       text: form.text.trim(),
       author: form.author.trim(),
-      dateSaid: new Date(form.dateSaid).toISOString(),
+      dateSaid: form.dateSaid ? new Date(form.dateSaid).toISOString() : null,
       context: form.context.trim() || null,
       tags: form.tags,
       rating: form.rating,
@@ -250,7 +251,7 @@ function QuoteFormInner({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="q-author">
-              Who said it? <span className="text-destructive">*</span>
+              Who said it?
             </Label>
             <Input
               id="q-author"
@@ -267,7 +268,7 @@ function QuoteFormInner({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="q-date">
-              When? <span className="text-destructive">*</span>
+              When?
             </Label>
             <Input
               id="q-date"
@@ -275,6 +276,9 @@ function QuoteFormInner({
               value={form.dateSaid}
               onChange={(e) => set("dateSaid", e.target.value)}
             />
+            <p className="text-[10px] text-muted-foreground">
+              Leave blank if you don&apos;t remember
+            </p>
           </div>
         </div>
 

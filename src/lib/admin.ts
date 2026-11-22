@@ -15,7 +15,7 @@ export const ADMIN_EMAILS = [
 
 // Company info — shown in the footer, TOS, and Privacy Policy.
 export const COMPANY_NAME = "LPBEnterprises";
-export const SUPPORT_EMAIL = "support@lpbenterprises.com";
+export const SUPPORT_EMAIL = "lpbmusic5426@gmail.com";
 
 // Tip jar link — Cash App. Users tap "Support Quote Vault" → opens Cash App.
 export const TIP_JAR_URL = "https://cash.app/$lpbyars";

@@ -145,7 +145,7 @@ export function LegalDialog({ open, onOpenChange }: Props) {
               </Section>
               <Section title="Contact">
                 Questions about this policy or the app? Email us at{" "}
-                <strong>support@lpbenterprises.com</strong>
+                <strong>lpbmusic5426@gmail.com</strong>
               </Section>
             </TabsContent>
           </div>

@@ -1,6 +1,8 @@
 // Simple service worker — caches the app shell for offline use.
 // After first visit, the app works even without internet.
-const CACHE = "quote-vault-v2";
+// Cache name includes the app version — when the version changes (new deploy),
+// the cache name changes, the SW detects the update, and the page auto-reloads.
+const CACHE = "quote-vault-2.9.1";
 const ASSETS = ["/", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

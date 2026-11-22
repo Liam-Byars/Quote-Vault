@@ -277,7 +277,11 @@ export function useJoinGroup() {
       name: string;
       email?: string;
     }) => {
-      if (user && !cloud.error) {
+      // For joins, always try cloud first if signed in — don't let a
+      // stale cloud.error from initialization block the join. The join
+      // is a one-time Firestore query, not a continuous listener, so
+      // it works even if onSnapshot had a transient error earlier.
+      if (user) {
         try {
           return await withTimeout(joinCloudGroupByCode(user.uid, inviteCode, name, email));
         } catch (err) {

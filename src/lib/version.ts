@@ -22,4 +22,4 @@
 //   Email invite for group members
 //   Maintenance mode
 //   Admin account system
-export const APP_VERSION = "2.7.0";
+export const APP_VERSION = "2.7.1";

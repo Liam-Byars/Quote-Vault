@@ -42,7 +42,7 @@ import {
   parseTags,
   type Quote,
 } from "@/lib/quote-types";
-import { useToggleFavorite, useDeleteQuote } from "@/hooks/use-quotes";
+import { useToggleFavorite, useDeleteQuote, useCreateQuote } from "@/hooks/use-quotes";
 import { StarRating } from "./star-rating";
 import { QrDialog } from "./qr-dialog";
 import { exportQuoteImage } from "./share-image";
@@ -65,6 +65,7 @@ function safeFormat(iso: string | null, fmt: string): string {
 export function QuoteCard({ quote, onEdit, groupName }: Props) {
   const toggleFav = useToggleFavorite();
   const deleteQuote = useDeleteQuote();
+  const createQuote = useCreateQuote();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
   const [laughs, setLaughs] = useState(() => {
@@ -92,12 +93,36 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
 
   const onDelete = async () => {
     setConfirmOpen(false);
+    // Store the quote data for undo.
+    const snapshot = {
+      text: quote.text,
+      author: quote.author,
+      dateSaid: quote.dateSaid,
+      context: quote.context,
+      tags: quote.tags,
+      rating: quote.rating,
+      favorite: quote.favorite,
+      groupId: quote.groupId,
+    };
     try {
       await deleteQuote.mutateAsync({
         id: quote.id,
         groupId: quote.groupId,
       });
-      toast.success("Quote deleted");
+      toast("Quote deleted", {
+        duration: 5000,
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            try {
+              await createQuote.mutateAsync(snapshot);
+              toast.success("Quote restored");
+            } catch {
+              toast.error("Couldn’t restore the quote");
+            }
+          },
+        },
+      });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to delete");
     }

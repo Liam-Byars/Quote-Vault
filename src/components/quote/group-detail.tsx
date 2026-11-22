@@ -77,6 +77,7 @@ export function GroupDetail({
   const [nameDraft, setNameDraft] = useState("");
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [memberDraft, setMemberDraft] = useState("");
+  const [groupSearch, setGroupSearch] = useState("");
 
   const group = data?.group;
 
@@ -168,6 +169,16 @@ export function GroupDetail({
       </div>
     );
   }
+
+  const filteredQuotes = group.quotes.filter((q) => {
+    if (!groupSearch.trim()) return true;
+    const s = groupSearch.toLowerCase();
+    return (
+      q.text.toLowerCase().includes(s) ||
+      q.author.toLowerCase().includes(s) ||
+      (q.context ?? "").toLowerCase().includes(s)
+    );
+  });
 
   return (
     <div className="space-y-4">
@@ -357,10 +368,18 @@ export function GroupDetail({
 
       {/* Quotes in this group */}
       <div>
-        <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-sm font-semibold">
-            {group.quotes.length} {group.quotes.length === 1 ? "quote" : "quotes"}
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <h3 className="shrink-0 text-sm font-semibold">
+            {filteredQuotes.length} {filteredQuotes.length === 1 ? "quote" : "quotes"}
           </h3>
+          {group.quotes.length > 0 && (
+            <Input
+              placeholder="Search in this group..."
+              value={groupSearch}
+              onChange={(e) => setGroupSearch(e.target.value)}
+              className="h-8 flex-1 text-xs"
+            />
+          )}
         </div>
         {group.quotes.length === 0 ? (
           <div className="rounded-xl border border-dashed bg-card/50 p-8 text-center text-sm text-muted-foreground">
@@ -372,9 +391,13 @@ export function GroupDetail({
               </Button>
             </div>
           </div>
+        ) : filteredQuotes.length === 0 ? (
+          <div className="rounded-xl border border-dashed bg-card/50 p-6 text-center text-sm text-muted-foreground">
+            No quotes match &ldquo;{groupSearch}&rdquo;
+          </div>
         ) : (
           <div className="space-y-3">
-            {group.quotes.map((q) => (
+            {filteredQuotes.map((q) => (
               <QuoteCard
                 key={q.id}
                 quote={q}

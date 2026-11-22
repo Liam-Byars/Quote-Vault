@@ -28,6 +28,7 @@ import {
 import { db } from "./firebase";
 import type { Quote, QuoteInput, VoiceFont } from "./quote-types";
 import { personId, type Person, type PersonInput } from "./person-types";
+import type { Suggestion } from "./suggestion-types";
 import type {
   Group,
   GroupInput,
@@ -553,6 +554,41 @@ export async function saveCloudPerson(
     },
     { merge: true }
   );
+}
+
+// ── Suggestions ───────────────────────────────────────────────────────────
+
+export async function createCloudSuggestion(
+  uid: string,
+  text: string,
+  authorName: string
+): Promise<void> {
+  const firestore = requireDb();
+  await addDoc(collection(firestore, "suggestions"), {
+    text,
+    uid,
+    authorName,
+    createdAt: new Date().toISOString(),
+  });
+}
+
+export async function fetchCloudSuggestions(): Promise<Suggestion[]> {
+  const firestore = requireDb();
+  const snap = await getDocs(collection(firestore, "suggestions"));
+  return snap.docs
+    .map((d) => ({
+      id: d.id,
+      text: String(d.data().text ?? ""),
+      uid: String(d.data().uid ?? ""),
+      authorName: String(d.data().authorName ?? "Anonymous"),
+      createdAt: String(d.data().createdAt ?? new Date().toISOString()),
+    }))
+    .sort((a, b) => (b.createdAt < a.createdAt ? -1 : 1));
+}
+
+export async function deleteCloudSuggestion(id: string): Promise<void> {
+  const firestore = requireDb();
+  await deleteDoc(doc(firestore, "suggestions", id));
 }
 
 // Re-exported types used by cloud-sync.

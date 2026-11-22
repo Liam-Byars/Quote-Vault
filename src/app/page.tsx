@@ -23,6 +23,8 @@ import { CloudStatus } from "@/components/quote/cloud-status";
 import { ThemeCustomizer } from "@/components/quote/theme-customizer";
 import { Reminders } from "@/components/quote/reminders";
 import { AdminView } from "@/components/quote/admin-view";
+import { SuggestionsView } from "@/components/quote/suggestions-view";
+import { SuggestionBox } from "@/components/quote/suggestion-box";
 import { exportQuoteBook } from "@/components/quote/export-pdf";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase";
@@ -35,7 +37,7 @@ import { useGroups } from "@/hooks/use-groups";
 import { parseAuthors, parseTags, type Quote } from "@/lib/quote-types";
 import { APP_VERSION } from "@/lib/version";
 
-type Tab = "vault" | "groups" | "stats" | "admin";
+type Tab = "vault" | "groups" | "stats" | "suggestions" | "admin";
 
 export default function Page() {
   const { isAdmin } = useAuth();
@@ -271,6 +273,13 @@ export default function Page() {
               />
               {isAdmin && (
                 <TabButton
+                  active={tab === "suggestions"}
+                  onClick={() => selectTab("suggestions")}
+                  label="Suggestions"
+                />
+              )}
+              {isAdmin && (
+                <TabButton
                   active={tab === "admin"}
                   onClick={() => selectTab("admin")}
                   label="Admin"
@@ -327,6 +336,8 @@ export default function Page() {
             />
           )}
 
+          {tab === "suggestions" && isAdmin && <SuggestionsView />}
+
           {tab === "admin" && isAdmin && <AdminView />}
 
           {tab === "groups" && selectedGroupId && (
@@ -356,6 +367,7 @@ export default function Page() {
           >
             Terms · Privacy
           </button>
+          <SuggestionBox />
         </div>
       </footer>
 

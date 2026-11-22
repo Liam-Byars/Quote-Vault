@@ -46,6 +46,12 @@ service cloud.firestore {
       allow update: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
 
+    // Suggestions — any signed-in user can submit; only admin can read/delete.
+    match /suggestions/{suggestionId} {
+      allow create: if isSignedIn();
+      allow read, delete: if isAdmin();
+    }
+
     // Config collection — maintenance mode flag etc.
     // Anyone (even unsigned-in) can read so the app can check maintenance
     // status before sign-in. Only admin can write.

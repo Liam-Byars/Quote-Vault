@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Quote } from "@/lib/quote-types";
+import { type Quote, type VoiceFont } from "@/lib/quote-types";
 import type { Group } from "@/lib/group-types";
 import { useCreateQuote, useUpdateQuote } from "@/hooks/use-quotes";
 import { describeCloudError } from "@/lib/cloud-errors";
@@ -72,6 +72,7 @@ type FormState = {
   rating: number;
   favorite: boolean;
   groupId: string; // "" = personal / none
+  voiceFont: VoiceFont;
 };
 
 function todayISO(): string {
@@ -103,6 +104,7 @@ function makeInitial(
       rating: 3,
       favorite: false,
       groupId: presetGroupId ?? "",
+      voiceFont: "normal",
     };
   }
   return {
@@ -114,6 +116,7 @@ function makeInitial(
     rating: editing.rating,
     favorite: editing.favorite,
     groupId: editing.groupId ?? "",
+    voiceFont: editing.voiceFont ?? "normal",
   };
 }
 
@@ -205,6 +208,7 @@ function QuoteFormInner({
       rating: form.rating,
       favorite: form.favorite,
       groupId: form.groupId || null,
+      voiceFont: form.voiceFont,
     };
     try {
       if (editing) {
@@ -277,6 +281,25 @@ function QuoteFormInner({
               <Mic className={listening ? "h-4 w-4 text-primary animate-pulse" : "h-4 w-4 text-muted-foreground"} />
             </button>
           </div>
+        </div>
+
+        {/* Voice font picker */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">Voice style:</span>
+          {(["normal", "bold", "cursive", "italic", "shout"] as VoiceFont[]).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => set("voiceFont", v)}
+              className={`rounded-full px-2.5 py-1 text-xs transition-colors ${
+                form.voiceFont === v
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {v === "normal" ? "Normal" : v === "bold" ? "Bold" : v === "cursive" ? "Cursive" : v === "italic" ? "Italic" : "SHOUT"}
+            </button>
+          ))}
         </div>
 
         {/* Author + date */}

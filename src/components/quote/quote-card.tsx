@@ -40,6 +40,7 @@ import {
   initials,
   parseAuthors,
   parseTags,
+  voiceFontStyle,
   type Quote,
 } from "@/lib/quote-types";
 import { useToggleFavorite, useDeleteQuote, useCreateQuote } from "@/hooks/use-quotes";
@@ -238,7 +239,10 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
             {/* The quote */}
             <div className="relative mt-2 pl-4">
               <QuoteIcon className="absolute left-0 top-0.5 h-3.5 w-3.5 text-primary/40" />
-              <p className="text-[15px] leading-relaxed text-foreground sm:text-base">
+              <p
+                className="text-[15px] leading-relaxed text-foreground sm:text-base"
+                style={voiceFontStyle(quote.voiceFont)}
+              >
                 {quote.text}
               </p>
             </div>

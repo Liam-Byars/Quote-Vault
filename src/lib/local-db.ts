@@ -221,6 +221,7 @@ export async function createLocalQuote(input: QuoteInput): Promise<Quote> {
     rating: input.rating ?? 3,
     favorite: Boolean(input.favorite),
     groupId: input.groupId ?? null,
+    voiceFont: input.voiceFont ?? "normal",
     createdAt: now,
     updatedAt: now,
   };
@@ -245,6 +246,7 @@ export async function updateLocalQuote(
     rating: input.rating ?? 3,
     favorite: Boolean(input.favorite),
     groupId: input.groupId ?? null,
+    voiceFont: input.voiceFont ?? existing.voiceFont ?? "normal",
     updatedAt: new Date().toISOString(),
   };
   await db.put("quotes", quote);

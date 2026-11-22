@@ -26,7 +26,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import type { Quote, QuoteInput } from "./quote-types";
+import type { Quote, QuoteInput, VoiceFont } from "./quote-types";
 import type {
   Group,
   GroupInput,
@@ -61,6 +61,7 @@ export function mapQuoteDoc(
       groupIdOverride !== undefined
         ? groupIdOverride
         : ((data.groupId as string) ?? null),
+    voiceFont: (data.voiceFont as VoiceFont) ?? "normal",
     createdAt: String(data.createdAt ?? new Date().toISOString()),
     updatedAt: String(data.updatedAt ?? new Date().toISOString()),
   };
@@ -119,6 +120,7 @@ function quotePayload(uid: string, input: QuoteInput) {
     rating: input.rating ?? 3,
     favorite: Boolean(input.favorite),
     groupId: input.groupId ?? null,
+    voiceFont: input.voiceFont ?? "normal",
     createdAt: now,
     updatedAt: now,
   };
@@ -165,6 +167,7 @@ export async function updateCloudQuote(args: {
     rating: input.rating ?? 3,
     favorite: Boolean(input.favorite),
     groupId: input.groupId ?? null,
+    voiceFont: input.voiceFont ?? "normal",
     createdAt: now, // setDoc replaces the doc; createdAt is refreshed (best effort)
     updatedAt: now,
   };

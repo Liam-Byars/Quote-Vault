@@ -1,30 +1,49 @@
 // Shared types for the Quote Vault app.
 
+export type VoiceFont = "normal" | "bold" | "cursive" | "italic" | "shout";
+
 export type Quote = {
   id: string;
   text: string;
   author: string;
-  dateSaid: string | null; // ISO string or null if date unknown
+  dateSaid: string | null;
   context: string | null;
-  tags: string; // comma-separated
-  rating: number; // 1-5
+  tags: string;
+  rating: number;
   favorite: boolean;
   groupId: string | null;
-  createdAt: string; // ISO string
-  updatedAt: string; // ISO string
+  voiceFont?: VoiceFont;
+  createdAt: string;
+  updatedAt: string;
 };
 
-// Payload sent from the client when creating / updating a quote.
 export type QuoteInput = {
   text: string;
   author: string;
-  dateSaid: string | null; // ISO string or null
+  dateSaid: string | null;
   context?: string | null;
   tags?: string;
   rating?: number;
   favorite?: boolean;
   groupId?: string | null;
+  voiceFont?: VoiceFont;
 };
+
+// CSS style applied to the quote text based on the voice font.
+export function voiceFontStyle(voiceFont?: VoiceFont): React.CSSProperties {
+  switch (voiceFont) {
+    case "bold":
+      return { fontWeight: 700, fontFamily: "Georgia, serif" };
+    case "cursive":
+      return { fontFamily: "'Comic Sans MS', cursive", fontStyle: "italic" };
+    case "italic":
+      return { fontStyle: "italic" };
+    case "shout":
+      return { fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" };
+    default:
+      return {};
+  }
+}
 
 export type QuoteStats = {
   total: number;

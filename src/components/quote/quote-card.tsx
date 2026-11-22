@@ -47,6 +47,7 @@ import { useToggleFavorite, useDeleteQuote, useCreateQuote } from "@/hooks/use-q
 import { StarRating } from "./star-rating";
 import { QrDialog } from "./qr-dialog";
 import { exportQuoteImage } from "./share-image";
+import { PersonDialog } from "./person-dialog";
 
 type Props = {
   quote: Quote;
@@ -69,6 +70,8 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
   const createQuote = useCreateQuote();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
+  const [personOpen, setPersonOpen] = useState(false);
+  const [personName, setPersonName] = useState("");
   const [laughs, setLaughs] = useState(() => {
     if (typeof window === "undefined") return 0;
     const stored = localStorage.getItem(`laugh-${quote.id}`);
@@ -166,7 +169,14 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
             {/* Header row */}
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="truncate font-semibold leading-tight text-foreground">
+                <p
+                  className="truncate font-semibold leading-tight text-foreground cursor-pointer hover:text-primary"
+                  onClick={() => {
+                    setPersonName(primaryAuthor);
+                    setPersonOpen(true);
+                  }}
+                  title="Click to view profile"
+                >
                   {quote.author || "Unknown"}
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
@@ -318,6 +328,12 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
         description="Scan to read the quote, or copy the text to share it."
         payload={`"${quote.text}" — ${quote.author || "Unknown"}`}
         caption={`"${quote.text}" — ${quote.author || "Unknown"}`}
+      />
+
+      <PersonDialog
+        name={personName}
+        open={personOpen}
+        onOpenChange={setPersonOpen}
       />
     </>
   );

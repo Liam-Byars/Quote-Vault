@@ -39,6 +39,13 @@ service cloud.firestore {
       allow update, delete: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
     }
 
+    // People profiles — owner-only (each user's person profiles).
+    match /people/{personId} {
+      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
     // Config collection — maintenance mode flag etc.
     // Anyone (even unsigned-in) can read so the app can check maintenance
     // status before sign-in. Only admin can write.

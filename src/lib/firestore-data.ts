@@ -27,6 +27,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Quote, QuoteInput, VoiceFont } from "./quote-types";
+import { personId, type Person, type PersonInput } from "./person-types";
 import type {
   Group,
   GroupInput,
@@ -505,6 +506,53 @@ export async function migrateOwnedGroups(uid: string): Promise<void> {
     }
     await batch.commit();
   }
+}
+
+// ── People profiles ──────────────────────────────────────────────────────
+
+export async function fetchCloudPerson(
+  uid: string,
+  name: string
+): Promise<Person | null> {
+  const firestore = requireDb();
+  const id = personId(uid, name);
+  const snap = await getDoc(doc(firestore, "people", id));
+  if (!snap.exists()) return null;
+  const data = snap.data();
+  return {
+    id,
+    uid,
+    name: String(data.name ?? name),
+    lastName: String(data.lastName ?? ""),
+    middleInitial: String(data.middleInitial ?? ""),
+    birthday: (data.birthday as string) ?? null,
+    notes: String(data.notes ?? ""),
+    createdAt: String(data.createdAt ?? new Date().toISOString()),
+    updatedAt: String(data.updatedAt ?? new Date().toISOString()),
+  };
+}
+
+export async function saveCloudPerson(
+  uid: string,
+  name: string,
+  input: PersonInput
+): Promise<void> {
+  const firestore = requireDb();
+  const id = personId(uid, name);
+  const now = new Date().toISOString();
+  await setDoc(
+    doc(firestore, "people", id),
+    {
+      uid,
+      name,
+      lastName: input.lastName ?? "",
+      middleInitial: input.middleInitial ?? "",
+      birthday: input.birthday ?? null,
+      notes: input.notes ?? "",
+      updatedAt: now,
+    },
+    { merge: true }
+  );
 }
 
 // Re-exported types used by cloud-sync.

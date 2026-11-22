@@ -7,6 +7,7 @@
 
 import { openDB, type IDBPDatabase } from "idb";
 import type { Quote, QuoteInput } from "./quote-types";
+import type { Person, PersonInput } from "./person-types";
 import type {
   Group,
   GroupInput,
@@ -18,7 +19,7 @@ import type {
 type GroupDoc = Group & { members: GroupMember[] };
 
 const DB_NAME = "quote-vault";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
 
@@ -31,6 +32,9 @@ function getDB(): Promise<IDBPDatabase> {
         }
         if (!db.objectStoreNames.contains("groups")) {
           db.createObjectStore("groups", { keyPath: "id" });
+        }
+        if (!db.objectStoreNames.contains("people")) {
+          db.createObjectStore("people", { keyPath: "id" });
         }
       },
     });
@@ -462,4 +466,33 @@ export async function joinLocalGroup(
     await db.put("groups", doc);
   }
   return { group: { id: doc.id, name: doc.name }, alreadyMember };
+}
+
+// ── People profiles ───────────────────────────────────────────────────────
+
+export async function fetchLocalPerson(name: string): Promise<Person | null> {
+  const db = await getDB();
+  const id = `local_${name.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 30)}`;
+  const result = await db.get("people", id);
+  return (result as Person) ?? null;
+}
+
+export async function saveLocalPerson(
+  name: string,
+  input: PersonInput
+): Promise<void> {
+  const db = await getDB();
+  const id = `local_${name.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 30)}`;
+  const now = new Date().toISOString();
+  await db.put("people", {
+    id,
+    uid: "local",
+    name,
+    lastName: input.lastName ?? "",
+    middleInitial: input.middleInitial ?? "",
+    birthday: input.birthday ?? null,
+    notes: input.notes ?? "",
+    createdAt: now,
+    updatedAt: now,
+  });
 }

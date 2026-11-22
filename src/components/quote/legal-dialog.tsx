@@ -81,7 +81,25 @@ export function LegalDialog({ open, onOpenChange }: Props) {
                 only copy of anything important; you can export your quotes as
                 a PDF anytime.
               </Section>
-              <Section title="7. Changes">
+              <Section title="7. Installable app & offline">
+                Quote Vault can be installed as a Progressive Web App (PWA) on
+                your phone or computer. Once installed, it works like a native
+                app and can function offline using cached data. The app
+                automatically checks for updates and refreshes when new
+                versions are available.
+              </Section>
+              <Section title="8. Suggestions">
+                Users can submit feature suggestions or bug reports through the
+                in-app suggestion box. Submissions are visible to the admin
+                only. Don&apos;t include personal information in suggestions.
+              </Section>
+              <Section title="9. Payments">
+                The app includes an optional "Support" button that links to
+                Cash App. Any payments are processed by Cash App (a third-party
+                service) under their own terms. Quote Vault does not process,
+                store, or handle any payment information.
+              </Section>
+              <Section title="10. Changes">
                 If these terms change, the updated version will appear here.
                 Continued use after changes means you accept them.
               </Section>
@@ -104,6 +122,22 @@ export function LegalDialog({ open, onOpenChange }: Props) {
                     <strong>Account info:</strong> when you sign in with
                     Google, we see your name, email, and profile picture (via
                     Firebase Authentication) to label your account.
+                  </li>
+                  <li>
+                    <strong>Person profiles:</strong> if you add info about a
+                    person (last name, birthday, notes), it&apos;s stored in
+                    your cloud account and visible only to you.
+                  </li>
+                  <li>
+                    <strong>Suggestions:</strong> feature ideas or bug reports
+                    you submit are stored in the cloud and visible to the admin
+                    only.
+                  </li>
+                  <li>
+                    <strong>Voice input:</strong> if you use the microphone
+                    button, speech recognition is handled by your browser
+                    (Chrome/Edge). Audio is not sent to or stored on our
+                    servers.
                   </li>
                 </ul>
               </Section>
@@ -137,6 +171,12 @@ export function LegalDialog({ open, onOpenChange }: Props) {
                 When this happens, you&apos;ll see a downtime screen instead of
                 the app. This is used for fixing bugs or addressing issues.
                 Your data is never affected by maintenance mode.
+              </Section>
+              <Section title="Auto-refresh & caching">
+                The app caches files on your device for offline use and faster
+                loading. If you haven&apos;t opened the app in 24+ hours, it
+                automatically clears the cache and downloads the latest version
+                on your next visit.
               </Section>
               <Section title="Where data lives">
                 Cloud data is stored in Google Firebase (Firestore), which

@@ -1,25 +1,16 @@
 // Single source of truth for the app's version number.
 //
-// Format: MAJOR.MINOR.PATCH  (standard semantic versioning, no padding)
+// Format: MAJOR.BIG_UPDATE.FEATURE.BUGFIX  (4 digits)
 //
-//   MAJOR  — only changes when you explicitly say "bump to 2"
-//            (big redesigns / milestones). Stays at 1 until you say otherwise.
-//   MINOR  — bumps for new features (1.1.0 -> 1.2.0)
-//   PATCH  — bumps for small fixes/tweaks (1.1.0 -> 1.1.1 -> 1.1.2)
+//   MAJOR      — only changes when you explicitly say "bump to 3"
+//                 (big redesigns / milestones). Stays at 2 until you say.
+//   BIG_UPDATE — major feature batches (2.9.1.1 → 2.10.0.0)
+//   FEATURE    — individual new features (2.9.1.1 → 2.9.2.0)
+//   BUGFIX     — small fixes and tweaks (2.9.1.0 → 2.9.1.1 → 2.9.1.2)
 //
-// When patch or minor bumps, the numbers to the right reset to 0.
-// When major bumps (only on your word), everything resets: 2.0.0.
+// When a digit bumps, the ones to its right reset to 0.
+// MAJOR only changes on your word: 3.0.0.0
 //
-// v2.0.0 — The Big Update:
-//   Quote of the Day + On this Day + Share as image
-//   Stats dashboard with charts
-//   Color theme customization (8 presets)
-//   Reminders (7-day inactivity banner)
-//   Admin moderation view
-//   Better search (date range)
-//   Laugh reactions on quotes
-//   Optional author/date fields
-//   Email invite for group members
-//   Maintenance mode
-//   Admin account system
-export const APP_VERSION = "2.9.1";
+// Note: package.json stays at 3-digit semver (2.9.1) for npm compatibility.
+//       This 4-digit version is for display only (footer, etc.).
+export const APP_VERSION = "2.9.1.1";

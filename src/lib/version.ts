@@ -13,4 +13,4 @@
 //
 // Note: package.json stays at 3-digit semver (2.9.1) for npm compatibility.
 //       This 4-digit version is for display only (footer, etc.).
-export const APP_VERSION = "2.9.1.1";
+export const APP_VERSION = "2.9.1.2";

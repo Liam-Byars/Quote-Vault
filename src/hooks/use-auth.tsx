@@ -15,8 +15,8 @@ import {
   signOut as fbSignOut,
   type User,
 } from "firebase/auth";
-import { auth, isFirebaseConfigured } from "@/lib/firebase";
-import { isAdminEmail } from "@/lib/admin";
+import { getDoc, doc } from "firebase/firestore";
+import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
 
 type AuthState = {
   user: User | null;
@@ -38,9 +38,7 @@ const AuthContext = createContext<AuthState>({
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  // Loading is only true when Firebase auth exists and we're waiting for the
-  // first onAuthStateChanged callback. If auth is null (Firebase unconfigured),
-  // there's nothing to wait for.
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(() => !!auth);
 
   useEffect(() => {
@@ -48,9 +46,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setLoading(false);
+      if (!u) setIsAdmin(false);
     });
     return () => unsub();
   }, []);
+
+  // Check admin status by trying to read an admin-only Firestore document.
+  // The Firestore rules only allow admin emails to read this collection.
+  // If the read succeeds → user is admin. If denied → not admin.
+  // This keeps admin emails OUT of the client-side code entirely.
+  useEffect(() => {
+    if (!user || !db) {
+      setIsAdmin(false);
+      return;
+    }
+    getDoc(doc(db, "admin-only", "check"))
+      .then(() => setIsAdmin(true))
+      .catch(() => setIsAdmin(false));
+  }, [user]);
 
   const signInWithGoogle = async () => {
     if (!auth) {
@@ -70,11 +83,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       isFirebaseConfigured,
-      isAdmin: isAdminEmail(user?.email),
+      isAdmin,
       signInWithGoogle,
       signOut,
     }),
-    [user, loading]
+    [user, loading, isAdmin]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

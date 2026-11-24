@@ -22,6 +22,7 @@ import { FeaturedQuotes } from "@/components/quote/featured-quotes";
 import { CloudStatus } from "@/components/quote/cloud-status";
 import { ThemeCustomizer } from "@/components/quote/theme-customizer";
 import { Reminders } from "@/components/quote/reminders";
+import { ReminderSettings } from "@/components/quote/reminder-settings";
 import { AdminView } from "@/components/quote/admin-view";
 import { SuggestionsView } from "@/components/quote/suggestions-view";
 import { SuggestionBox } from "@/components/quote/suggestion-box";
@@ -34,6 +35,7 @@ import {
   type QuoteFilters,
 } from "@/hooks/use-quotes";
 import { useGroups } from "@/hooks/use-groups";
+import { useReminderNotifications } from "@/hooks/use-reminder-notifications";
 import { parseAuthors, parseTags, type Quote } from "@/lib/quote-types";
 import { APP_VERSION } from "@/lib/version";
 
@@ -61,6 +63,11 @@ export default function Page() {
 
   const quotes = quotesQuery.data?.quotes ?? [];
   const groups = groupsQuery.data?.groups ?? [];
+
+  // Daily reminder notifications — single instance at the page level so the
+  // settings state drives both the header Bell button and the background
+  // fire-checks.
+  const reminders = useReminderNotifications(quotes);
 
   // Read ?join= on mount (client-only to avoid SSR/Suspense requirements).
   // This is a one-time sync from an external system (the browser URL) into
@@ -243,6 +250,12 @@ export default function Page() {
               <span className="hidden sm:inline">Add quote</span>
             </Button>
             <ThemeCustomizer />
+            <ReminderSettings
+              settings={reminders.settings}
+              permission={reminders.permission}
+              onUpdate={reminders.update}
+              onTest={reminders.testNow}
+            />
             <UserMenu />
             <ThemeToggle />
           </div>

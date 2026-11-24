@@ -13,4 +13,6 @@
 //
 // Note: package.json stays at 3-digit semver (2.9.1) for npm compatibility.
 //       This 4-digit version is for display only (footer, etc.).
-export const APP_VERSION = "2.9.1.2";
+// 2.9.2.0 — daily reminder notifications (Bell button in header, background
+//           periodic-sync + in-app fallback, per-device time picker).
+export const APP_VERSION = "2.9.2.0";

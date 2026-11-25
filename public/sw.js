@@ -9,7 +9,7 @@
 // When CACHE changes (version bump), the new SW installs, the old cache is
 // evicted on activate, and pwa-register.tsx auto-reloads the page so the
 // user sees the new code immediately.
-const CACHE = "quote-vault-2.9.2.0";
+const CACHE = "quote-vault-2.9.2.1";
 const ASSETS = ["/", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

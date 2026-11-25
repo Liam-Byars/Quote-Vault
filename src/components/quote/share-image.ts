@@ -18,19 +18,29 @@ function wrapText(
   text: string,
   maxWidth: number
 ): string[] {
-  const words = text.split(" ");
   const lines: string[] = [];
-  let current = "";
-  for (const word of words) {
-    const test = current ? `${current} ${word}` : word;
-    if (ctx.measureText(test).width > maxWidth && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = test;
+  // Preserve explicit line breaks the author typed: split on \n first, then
+  // word-wrap each paragraph independently. An empty paragraph (blank line)
+  // becomes an empty entry so the renderer draws a visual gap.
+  const paragraphs = text.split("\n");
+  for (const para of paragraphs) {
+    if (para === "") {
+      lines.push("");
+      continue;
     }
+    const words = para.split(" ");
+    let current = "";
+    for (const word of words) {
+      const test = current ? `${current} ${word}` : word;
+      if (ctx.measureText(test).width > maxWidth && current) {
+        lines.push(current);
+        current = word;
+      } else {
+        current = test;
+      }
+    }
+    if (current) lines.push(current);
   }
-  if (current) lines.push(current);
   return lines;
 }
 

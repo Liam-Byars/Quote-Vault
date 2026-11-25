@@ -15,4 +15,6 @@
 //       This 4-digit version is for display only (footer, etc.).
 // 2.9.2.0 — daily reminder notifications (Bell button in header, background
 //           periodic-sync + in-app fallback, per-device time picker).
-export const APP_VERSION = "2.9.2.0";
+// 2.9.2.1 — preserve line breaks in quotes: newlines typed in the form now
+//           render in the card, Quote of the Day, and shared image.
+export const APP_VERSION = "2.9.2.1";

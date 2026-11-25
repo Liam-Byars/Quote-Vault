@@ -250,7 +250,7 @@ export function QuoteCard({ quote, onEdit, groupName }: Props) {
             <div className="relative mt-2 pl-4">
               <QuoteIcon className="absolute left-0 top-0.5 h-3.5 w-3.5 text-primary/40" />
               <p
-                className="text-[15px] leading-relaxed text-foreground sm:text-base"
+                className="whitespace-pre-wrap text-[15px] leading-relaxed text-foreground sm:text-base"
                 style={voiceFontStyle(quote.voiceFont)}
               >
                 {quote.text}

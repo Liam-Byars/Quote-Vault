@@ -75,7 +75,7 @@ export function FeaturedQuotes({ quotes }: Props) {
             <Sparkles className="h-3.5 w-3.5" />
             Quote of the Day
           </div>
-          <p className="text-lg font-medium leading-snug">
+          <p className="whitespace-pre-wrap text-lg font-medium leading-snug">
             &ldquo;{qotd.text}&rdquo;
           </p>
           <p className="mt-2 text-sm opacity-80">
